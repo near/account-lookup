@@ -12,6 +12,9 @@ function prepareAccountId(data) {
     if (data.endsWith('.near')) {
         return data.replace('@', '').replace('https://wallet.near.org/send-money/', '');
     }
+    if (data.length == 64 && !data.startsWith('ed25519:')) {
+        return data;
+    }
     let publicKey;
     if (data.startsWith('NEAR')) {
         publicKey = decode(data.slice(4)).slice(0, -4);
