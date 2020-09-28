@@ -1,0 +1,14 @@
+{
+  "engine": {
+    "node": ">= 12"
+  },
+  "dependencies": {
+    "bs58": "^4.0.1",
+    "js-sha256": "^0.9.0",
+    "near-api-js": "^0.29.1",
+    "parcel-bundler": "^1.12.4"
+  },
+  "scripts": {
+    "start": "parcel index.html"
+  }
+}
