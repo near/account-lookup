@@ -1,3 +1,4 @@
+import 'regenerator-runtime'
 
 import * as nearAPI from 'near-api-js';
 import sha256 from 'js-sha256';
