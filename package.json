@@ -10,6 +10,6 @@
   },
   "scripts": {
     "start": "parcel index.html",
-    "build": "parcel build index.html --public-url ./account-lookup"
+    "build": "parcel build index.html --public-url ./"
   }
 }
