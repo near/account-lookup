@@ -36,9 +36,9 @@ async function lookupLockup(near, accountId) {
     let lockupAccountId = accountToLockup('lockup.near', accountId);
     console.log(lockupAccountId);
     try {
-        let lockupAccount = await near.account(lockupAccountId);
-        let lockupState = await lockupAccount.state();
-        return { lockupAccountId, lockupAmount: lockupState.amount };
+        let lockupAccount = await near.account(accountId);
+        let lockupAmount = await lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
+        return { lockupAccountId, lockupAmount };
     } catch (error) {
         console.log(error);
         return { lockupAccountId: `${lockupAccountId} doesn't exist`, lockupAmount: 0 };

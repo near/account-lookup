@@ -22553,7 +22553,7 @@ function lookupLockup(_x, _x2) {
 
 function _lookupLockup() {
   _lookupLockup = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(near, accountId) {
-    var lockupAccountId, lockupAccount, lockupState;
+    var lockupAccountId, lockupAccount, lockupAmount;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -22562,18 +22562,18 @@ function _lookupLockup() {
             console.log(lockupAccountId);
             _context.prev = 2;
             _context.next = 5;
-            return near.account(lockupAccountId);
+            return near.account(accountId);
 
           case 5:
             lockupAccount = _context.sent;
             _context.next = 8;
-            return lockupAccount.state();
+            return lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
 
           case 8:
-            lockupState = _context.sent;
+            lockupAmount = _context.sent;
             return _context.abrupt("return", {
               lockupAccountId: lockupAccountId,
-              lockupAmount: lockupState.amount
+              lockupAmount: lockupAmount
             });
 
           case 12:
@@ -22739,7 +22739,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55884" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49190" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
