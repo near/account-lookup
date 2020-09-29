@@ -49,14 +49,44 @@
               <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ ownerAmount }} Ⓝ</div>
             </div>
           </div>
-          <div class="row border-top">
-            <div class="four wide computer seven wide mobile four wide tablet column title">Locked<div
-                class="sc-esjQYD gTrsiA trigger"></div>
+          {{#lockupState}}
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Locked<div
+                  class="sc-esjQYD gTrsiA trigger"></div>
+              </div>
+              <div class="six wide computer four wide mobile six wide tablet column">
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.lockupAmount }} Ⓝ</div>
+              </div>
             </div>
-            <div class="six wide computer four wide mobile six wide tablet column">
-              <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupAmount }} Ⓝ</div>
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Lockup period</div>
+              <div class="six wide computer four wide mobile six wide tablet column">
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.releaseDuration }} days</div>
+              </div>
             </div>
-          </div>
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Release start date</div>
+              <div class="six wide computer four wide mobile six wide tablet column">
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.lockupStart }}</div>
+              </div>
+            </div>
+            {{#lockupState.lockupDuration}}
+              <div class="row border-top">
+                <div class="four wide computer seven wide mobile four wide tablet column title">Lockup cliff</div>
+                <div class="six wide computer four wide mobile six wide tablet column">
+                  <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.lockupDuration }} days</div>
+                </div>
+              </div>
+            {{/lockupState.lockupDuration}}
+            {{#lockupState.vestingInformation}}
+              <div class="row border-top">
+                <div class="four wide computer seven wide mobile four wide tablet column title">Vesting (hash)</div>
+                <div class="six wide computer four wide mobile six wide tablet column">
+                  <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.vestingInformation }}</div>
+                </div>
+              </div>
+            {{/lockupState.vestingInformation}}
+          {{/lockupState}}
         </div>
         </div>
       </div></div>
@@ -64,8 +94,6 @@
 
     <p id="account-id"></p>
     <div id="output"></div>
-    <div id="result"></div>
-    <div id="vesting"></div>
     <div>
       <input type="button" value="Lookup" onclick="lookup()">
     </div>
