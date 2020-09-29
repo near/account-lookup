@@ -11,9 +11,8 @@ function accountToLockup(masterAccountId, accountId) {
 }
 
 function prepareAccountId(data) {
-    data = data.toLowerCase();
-    if (data.endsWith('.near')) {
-        return data.replace('@', '').replace('https://wallet.near.org/send-money/', '');
+    if (data.toLowerCase().endsWith('.near')) {
+        return data.replace('@', '').replace('https://wallet.near.org/send-money/', '').toLowerCase();
     }
     if (data.length == 64 && !data.startsWith('ed25519:')) {
         return data;
