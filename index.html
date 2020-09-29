@@ -20,6 +20,7 @@
     <p>
       Account ID OR Trust Wallet address OR Public key: 
     </p>
+    <form onsubmit="event.preventDefault(); lookup();">
     <p><input type="input" id="account" size="100" autocapitalize="off"></p>
 
     <script id="template" type="x-tmpl-mustache">
@@ -95,8 +96,8 @@
     <p id="account-id"></p>
     <div id="output"></div>
     <div>
-      <input type="button" value="Lookup" onclick="lookup()">
+      <input type="submit" value="Lookup">
     </div>
+    </form>
   </body>
 </html>
-
