@@ -1,8 +1,10 @@
 import 'regenerator-runtime'
 
 import * as nearAPI from 'near-api-js';
+import BN from 'bn.js';
 import sha256 from 'js-sha256';
 import { encode, decode } from 'bs58';
+import Mustache from 'mustache';
 
 function accountToLockup(masterAccountId, accountId) {
     return `${sha256(Buffer.from(accountId)).toString('hex').slice(0, 40)}.${masterAccountId}`;
@@ -31,17 +33,15 @@ const options = {
 };
 
 async function lookupLockup(near, accountId) {
+    let lockupAccountId = accountToLockup('lockup.near', accountId);
+    console.log(lockupAccountId);
     try {
-        let lockupAccountId = accountToLockup('lockup.near', accountId);
-        console.log(lockupAccountId);
         let lockupAccount = await near.account(lockupAccountId);
         let lockupState = await lockupAccount.state();
-        document.querySelector('#result').textContent = `Lockup ${lockupAccountId}, balance: ${nearAPI.utils.format.formatNearAmount(lockupState.amount, 2)}`;
-        return lockupAccountId;
+        return { lockupAccountId, lockupAmount: lockupState.amount };
     } catch (error) {
         console.log(error);
-        document.querySelector('#result').textContent = `Lockup doesn't exist`;
-        return null;
+        return { lockupAccountId: `${lockupAccountId} doesn't exist`, lockupAmount: 0 };
     }
 }
 
@@ -59,19 +59,35 @@ async function checkVesting(account, lockupAccountId) {
 async function lookup() {
     const inputAccountId = document.querySelector('#account').value;
     const near = await nearAPI.connect(options);
-    const accountId = prepareAccountId(inputAccountId);
+    let accountId = prepareAccountId(inputAccountId);
     console.log(accountId);
+    let lockupAccountId = '', lockupAmount = 0, totalAmount = 0, ownerAmount = 0;
+    const template = document.getElementById('template').innerHTML;
     try {
         let account = await near.account(accountId);
         let state = await account.state();
-        document.querySelector('#account-id').textContent = `${accountId}, balance: ${nearAPI.utils.format.formatNearAmount(state.amount, 2)}`;
 
-        let lockupAccountId = await lookupLockup(near, accountId);
+        ownerAmount = state.amount;
+        totalAmount = new BN(state.amount);
+
+        ({ lockupAccountId, lockupAmount } = await lookupLockup(near, accountId));
+        totalAmount = totalAmount.add(new BN(lockupAmount));
         await checkVesting(account, lockupAccountId);
     } catch (error) {
         console.log(error);
-        document.querySelector('#account-id').textContent = `${accountId} doesn't exist`;
+        accountId = `${accountId} doesn't exist`;
+        ownerAmount = 0;
+        totalAmount = 0;
+        lockupAmount = 0;
     }
+    console.log(ownerAmount, totalAmount, lockupAmount);
+    document.getElementById('output').innerHTML = Mustache.render(template, { 
+        accountId,
+        lockupAccountId,
+        ownerAmount: nearAPI.utils.format.formatNearAmount(ownerAmount, 2),
+        totalAmount: nearAPI.utils.format.formatNearAmount(totalAmount.toString(), 2),
+        lockupAmount: nearAPI.utils.format.formatNearAmount(lockupAmount, 2),
+     });
 }
 
 window.nearAPI = nearAPI;

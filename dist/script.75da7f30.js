@@ -22499,9 +22499,13 @@ require("regenerator-runtime");
 
 var nearAPI = _interopRequireWildcard(require("near-api-js"));
 
+var _bn = _interopRequireDefault(require("bn.js"));
+
 var _jsSha = _interopRequireDefault(require("js-sha256"));
 
 var _bs = require("bs58");
+
+var _mustache = _interopRequireDefault(require("mustache"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22554,9 +22558,9 @@ function _lookupLockup() {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            _context.prev = 0;
             lockupAccountId = accountToLockup('lockup.near', accountId);
             console.log(lockupAccountId);
+            _context.prev = 2;
             _context.next = 5;
             return near.account(lockupAccountId);
 
@@ -22567,22 +22571,26 @@ function _lookupLockup() {
 
           case 8:
             lockupState = _context.sent;
-            document.querySelector('#result').textContent = "Lockup ".concat(lockupAccountId, ", balance: ").concat(nearAPI.utils.format.formatNearAmount(lockupState.amount, 2));
-            return _context.abrupt("return", lockupAccountId);
+            return _context.abrupt("return", {
+              lockupAccountId: lockupAccountId,
+              lockupAmount: lockupState.amount
+            });
 
-          case 13:
-            _context.prev = 13;
-            _context.t0 = _context["catch"](0);
+          case 12:
+            _context.prev = 12;
+            _context.t0 = _context["catch"](2);
             console.log(_context.t0);
-            document.querySelector('#result').textContent = "Lockup doesn't exist";
-            return _context.abrupt("return", null);
+            return _context.abrupt("return", {
+              lockupAccountId: "".concat(lockupAccountId, " doesn't exist"),
+              lockupAmount: 0
+            });
 
-          case 18:
+          case 16:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 13]]);
+    }, _callee, null, [[2, 12]]);
   }));
   return _lookupLockup.apply(this, arguments);
 }
@@ -22628,7 +22636,8 @@ function lookup() {
 
 function _lookup() {
   _lookup = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
-    var inputAccountId, near, accountId, account, state, lockupAccountId;
+    var inputAccountId, near, accountId, lockupAccountId, lockupAmount, totalAmount, ownerAmount, template, account, state, _yield$lookupLockup;
+
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
@@ -22641,49 +22650,68 @@ function _lookup() {
             near = _context3.sent;
             accountId = prepareAccountId(inputAccountId);
             console.log(accountId);
-            _context3.prev = 6;
-            _context3.next = 9;
+            lockupAccountId = '', lockupAmount = 0, totalAmount = 0, ownerAmount = 0;
+            template = document.getElementById('template').innerHTML;
+            _context3.prev = 8;
+            _context3.next = 11;
             return near.account(accountId);
 
-          case 9:
+          case 11:
             account = _context3.sent;
-            _context3.next = 12;
+            _context3.next = 14;
             return account.state();
 
-          case 12:
+          case 14:
             state = _context3.sent;
-            document.querySelector('#account-id').textContent = "".concat(accountId, ", balance: ").concat(nearAPI.utils.format.formatNearAmount(state.amount, 2));
-            _context3.next = 16;
+            ownerAmount = state.amount;
+            totalAmount = new _bn.default(state.amount);
+            _context3.next = 19;
             return lookupLockup(near, accountId);
 
-          case 16:
-            lockupAccountId = _context3.sent;
-            _context3.next = 19;
+          case 19:
+            _yield$lookupLockup = _context3.sent;
+            lockupAccountId = _yield$lookupLockup.lockupAccountId;
+            lockupAmount = _yield$lookupLockup.lockupAmount;
+            totalAmount = totalAmount.add(new _bn.default(lockupAmount));
+            _context3.next = 25;
             return checkVesting(account, lockupAccountId);
 
-          case 19:
-            _context3.next = 25;
+          case 25:
+            _context3.next = 34;
             break;
 
-          case 21:
-            _context3.prev = 21;
-            _context3.t0 = _context3["catch"](6);
+          case 27:
+            _context3.prev = 27;
+            _context3.t0 = _context3["catch"](8);
             console.log(_context3.t0);
-            document.querySelector('#account-id').textContent = "".concat(accountId, " doesn't exist");
+            accountId = "".concat(accountId, " doesn't exist");
+            ownerAmount = 0;
+            totalAmount = 0;
+            lockupAmount = 0;
 
-          case 25:
+          case 34:
+            console.log(ownerAmount, totalAmount, lockupAmount);
+            document.getElementById('output').innerHTML = _mustache.default.render(template, {
+              accountId: accountId,
+              lockupAccountId: lockupAccountId,
+              ownerAmount: nearAPI.utils.format.formatNearAmount(ownerAmount, 2),
+              totalAmount: nearAPI.utils.format.formatNearAmount(totalAmount.toString(), 2),
+              lockupAmount: nearAPI.utils.format.formatNearAmount(lockupAmount, 2)
+            });
+
+          case 36:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[6, 21]]);
+    }, _callee3, null, [[8, 27]]);
   }));
   return _lookup.apply(this, arguments);
 }
 
 window.nearAPI = nearAPI;
 window.lookup = lookup;
-},{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","near-api-js":"node_modules/near-api-js/lib/browser-index.js","js-sha256":"node_modules/js-sha256/src/sha256.js","bs58":"node_modules/bs58/index.js","buffer":"node_modules/buffer/index.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","near-api-js":"node_modules/near-api-js/lib/browser-index.js","bn.js":"node_modules/bn.js/lib/bn.js","js-sha256":"node_modules/js-sha256/src/sha256.js","bs58":"node_modules/bs58/index.js","mustache":"node_modules/mustache/mustache.js","buffer":"node_modules/buffer/index.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -22711,7 +22739,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53640" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55884" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

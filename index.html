@@ -9,6 +9,7 @@
     
     <!-- import the webpage's stylesheet -->
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/wallet.css">
     
     <!-- import the webpage's javascript file -->
     <script src="/script.js" defer></script>
@@ -21,7 +22,48 @@
     </p>
     <p><input type="input" id="account" size="100"></p>
 
+    <script id="template" type="x-tmpl-mustache">
+    <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
+        <div class="ui grid sc-iuJeZd eYdFHY">
+          <div class="row border-top">
+            <div class="four wide computer seven wide mobile four wide tablet column title">Account ID</div>
+            <div class="six wide computer four wide mobile six wide tablet column">{{accountId}}</div>
+          </div>
+          <div class="row border-top">
+            <div class="four wide computer seven wide mobile four wide tablet column title">Lockup account ID</div>
+            <div class="six wide computer four wide mobile six wide tablet column">{{lockupAccountId}}</div>
+          </div>
+          <div class="row border-top">
+            <div class="four wide computer seven wide mobile four wide tablet column title">Total Balance<div
+                class="sc-esjQYD gTrsiA trigger"></div>
+            </div>
+            <div class="six wide computer four wide mobile six wide tablet column">
+              <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ totalAmount }} Ⓝ</div>
+            </div>
+          </div>
+          <div class="row border-top">
+            <div class="four wide computer seven wide mobile four wide tablet column title">Owner's Balance<div
+                class="sc-esjQYD gTrsiA trigger"></div>
+            </div>
+            <div class="six wide computer four wide mobile six wide tablet column">
+              <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ ownerAmount }} Ⓝ</div>
+            </div>
+          </div>
+          <div class="row border-top">
+            <div class="four wide computer seven wide mobile four wide tablet column title">Locked<div
+                class="sc-esjQYD gTrsiA trigger"></div>
+            </div>
+            <div class="six wide computer four wide mobile six wide tablet column">
+              <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupAmount }} Ⓝ</div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div></div>
+    </script>
+
     <p id="account-id"></p>
+    <div id="output"></div>
     <div id="result"></div>
     <div id="vesting"></div>
     <div>
