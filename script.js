@@ -11,6 +11,7 @@ function accountToLockup(masterAccountId, accountId) {
 }
 
 function prepareAccountId(data) {
+    data = data.toLowerCase();
     if (data.endsWith('.near')) {
         return data.replace('@', '').replace('https://wallet.near.org/send-money/', '');
     }
