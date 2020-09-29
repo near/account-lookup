@@ -30,6 +30,32 @@ const options = {
     deps: { }
 };
 
+async function lookupLockup(near, accountId) {
+    try {
+        let lockupAccountId = accountToLockup('lockup.near', accountId);
+        console.log(lockupAccountId);
+        let lockupAccount = await near.account(lockupAccountId);
+        let lockupState = await lockupAccount.state();
+        document.querySelector('#result').textContent = `Lockup ${lockupAccountId}, balance: ${nearAPI.utils.format.formatNearAmount(lockupState.amount, 2)}`;
+        return lockupAccountId;
+    } catch (error) {
+        console.log(error);
+        document.querySelector('#result').textContent = `Lockup doesn't exist`;
+        return null;
+    }
+}
+
+async function checkVesting(account, lockupAccountId) {
+    let result = await account.viewFunction(lockupAccountId, 'get_vesting_information', {});
+    if (result != 'None') {
+        if (result.VestingHash) {
+            document.querySelector('#vesting').textContent = `Vesting hash: ${result.VestingHash}`;
+        } else {
+            document.querySelector('#vesting').textContent = `Vesting schedule: ${JSON.stringify(result.VestingSchedule)}`;
+        }
+    }
+}
+
 async function lookup() {
     const inputAccountId = document.querySelector('#account').value;
     const near = await nearAPI.connect(options);
@@ -40,16 +66,8 @@ async function lookup() {
         let state = await account.state();
         document.querySelector('#account-id').textContent = `${accountId}, balance: ${nearAPI.utils.format.formatNearAmount(state.amount, 2)}`;
 
-        try {
-            let lockupAccountId = accountToLockup('lockup.near', accountId);
-            console.log(lockupAccountId);
-            let lockupAccount = await near.account(lockupAccountId);
-            let lockupState = await lockupAccount.state();
-            document.querySelector('#result').textContent = `Lockup ${lockupAccountId}, balance: ${nearAPI.utils.format.formatNearAmount(lockupState.amount, 2)}`;
-        } catch (error) {
-            console.log(error);
-            document.querySelector('#result').textContent = `Lockup doesn't exist`;
-        }
+        let lockupAccountId = await lookupLockup(near, accountId);
+        await checkVesting(account, lockupAccountId);
     } catch (error) {
         console.log(error);
         document.querySelector('#account-id').textContent = `${accountId} doesn't exist`;
