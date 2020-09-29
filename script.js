@@ -72,7 +72,9 @@ async function lookup() {
 
         ({ lockupAccountId, lockupAmount } = await lookupLockup(near, accountId));
         totalAmount = totalAmount.add(new BN(lockupAmount));
-        await checkVesting(account, lockupAccountId);
+        if (lockupAmount !== 0) {
+            await checkVesting(account, lockupAccountId);
+        }
     } catch (error) {
         console.log(error);
         accountId = `${accountId} doesn't exist`;
