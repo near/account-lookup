@@ -65,7 +65,10 @@ async function viewLockupState(connection, contractId) {
     if (vestingType == 1) {
         vestingInformation = { VestingHash: reader.read_array(() => reader.read_u8()) };
     } else if (vestingType == 2) {
-        vestingInformation = 'TODO';
+        let vestingStart = reader.read_u64();
+        let vestingCliff = reader.read_u64();
+        let vestingEnd = reader.read_u64();
+        vestingInformation = { vestingStart, vestingCliff, vestingEnd };
     } else if (vestingType == 3) {
         vestingInformation = 'TODO';
     }
@@ -129,8 +132,13 @@ async function lookup() {
             } else {
                 lockupState.lockupDuration = null;
             }
-            if (lockupState.vestingInformation) {
-                lockupState.vestingInformation = Buffer.from(lockupState.vestingInformation.VestingHash).toString('base64');
+            if (lockupState.vestingInformation.VestingHash) {
+                lockupState.vestingInformation = `Hash: ${Buffer.from(lockupState.vestingInformation.VestingHash).toString('base64')}`;
+            } else if (lockupState.vestingInformation.vestingStart) {
+                let vestingStart = new Date(parseInt(lockupState.vestingInformation.vestingStart) / 1000000);
+                let vestingCliff = new Date(parseInt(lockupState.vestingInformation.vestingCliff) / 1000000);
+                let vestingEnd = new Date(parseInt(lockupState.vestingInformation.vestingEnd) / 1000000);
+                lockupState.vestingInformation = `from ${vestingStart} until ${vestingEnd} with cliff at ${vestingCliff}`;
             }
             totalAmount = totalAmount.add(new BN(lockupAmount));
             lockupState.lockupAmount = nearAPI.utils.format.formatNearAmount(lockupAmount.toString(), 2);
