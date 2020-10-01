@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hello!</title><link rel="stylesheet" href="style.2484efd3.css"><link rel="stylesheet" href="wallet.b3ae28fd.css"><script src="script.33294edc.js" defer></script></head><body> <h1>Account lockup lookup</h1> <p> Account ID OR Trust Wallet address OR Public key: </p> <form onsubmit="event.preventDefault(); lookup();"> <p><input type="input" id="account" size="100" autocapitalize="off"></p> <script id="template" type="x-tmpl-mustache">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hello!</title><link rel="stylesheet" href="style.2484efd3.css"><link rel="stylesheet" href="wallet.b3ae28fd.css"><script src="script.22d63c2c.js" defer></script></head><body> <h1>Account lockup lookup</h1> <p> Account ID OR Trust Wallet address OR Public key: </p> <form onsubmit="event.preventDefault(); lookup();"> <p><input type="input" id="account" size="100" autocapitalize="off"></p> <script id="template" type="x-tmpl-mustache">
     <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
         <div class="ui grid sc-iuJeZd eYdFHY">
           <div class="row border-top">
@@ -56,7 +56,7 @@
             {{/lockupState.lockupDuration}}
             {{#lockupState.vestingInformation}}
               <div class="row border-top">
-                <div class="four wide computer seven wide mobile four wide tablet column title">Vesting (hash)</div>
+                <div class="four wide computer seven wide mobile four wide tablet column title">Vesting</div>
                 <div class="six wide computer four wide mobile six wide tablet column">
                   <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.vestingInformation }}</div>
                 </div>
