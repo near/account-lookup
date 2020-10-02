@@ -1,4 +1,29 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hello!</title><link rel="stylesheet" href="style.2484efd3.css"><link rel="stylesheet" href="wallet.b3ae28fd.css"><script src="script.22d63c2c.js" defer></script></head><body> <h1>Account lockup lookup</h1> <p> Account ID OR Trust Wallet address OR Public key: </p> <form onsubmit="event.preventDefault(); lookup();"> <p><input type="input" id="account" size="100" autocapitalize="off"></p> <script id="template" type="x-tmpl-mustache">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Hello!</title>
+    
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.e308ff8e.css">
+    <link rel="stylesheet" href="/wallet.a10252e6.css">
+    
+    <!-- import the webpage's javascript file -->
+    <script src="/script.75da7f30.js" defer=""></script>
+  <script src="/style.e308ff8e.js"></script><script src="/wallet.a10252e6.js"></script></head>  
+  <body>
+    <h1>Account lockup lookup</h1>
+    
+    <p>
+      Account ID OR Trust Wallet address OR Public key: 
+    </p>
+    <form onsubmit="event.preventDefault(); lookup();">
+    <p><input type="input" id="account" size="100" autocapitalize="off"></p>
+
+    <script id="template" type="x-tmpl-mustache">
     <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
         <div class="ui grid sc-iuJeZd eYdFHY">
           <div class="row border-top">
@@ -66,4 +91,13 @@
         </div>
         </div>
       </div></div>
-    </script> <p id="account-id"></p> <div id="output"></div> <div> <input type="submit" value="Lookup"> </div> </form> </body></html>
+    </script>
+
+    <p id="account-id"></p>
+    <div id="output"></div>
+    <div>
+      <input type="submit" value="Lookup">
+    </div>
+    </form>
+  </body>
+</html>
