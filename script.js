@@ -147,7 +147,9 @@ async function lookup() {
         }
     } catch (error) {
         console.log(error);
-        accountId = `${accountId} doesn't exist`;
+        if (accountId.length < 64) {
+            accountId = `${accountId} doesn't exist`;
+        }
         ownerAmount = 0;
         totalAmount = 0;
         lockupAmount = 0;
