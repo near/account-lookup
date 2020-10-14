@@ -22782,7 +22782,11 @@ function _lookup() {
             _context3.prev = 27;
             _context3.t0 = _context3["catch"](9);
             console.log(_context3.t0);
-            accountId = "".concat(accountId, " doesn't exist");
+
+            if (accountId.length < 64) {
+              accountId = "".concat(accountId, " doesn't exist");
+            }
+
             ownerAmount = 0;
             totalAmount = 0;
             lockupAmount = 0;
@@ -22844,7 +22848,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58605" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52751" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
