@@ -10,6 +10,17 @@ h1 {
   color: #373fff;
 }
 
+table {
+  margin-top: 10px;
+  border-collapse: collapse;
+}
 
+table, tr, td {
+  border: 1px solid black;
+}
+
+td {
+  width: 200px;
+}
 
 /*# sourceMappingURL=/style.e308ff8e.css.map */

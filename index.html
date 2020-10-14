@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hello!</title><link rel="stylesheet" href="style.2484efd3.css"><link rel="stylesheet" href="wallet.b3ae28fd.css"><script src="script.7ca14977.js" defer></script></head><body> <h1>Account lockup lookup</h1> <p> Account ID OR Trust Wallet address OR Public key: </p> <form onsubmit="event.preventDefault(); lookup();"> <p><input type="input" id="account" size="100" autocapitalize="off"></p> <script id="template" type="x-tmpl-mustache">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lookup your account</title><link rel="stylesheet" href="wallet.b3ae28fd.css"><link rel="stylesheet" href="style.ddf7c1ae.css"><script src="script.373fb9de.js" defer></script></head><body> <h1>Account lockup lookup</h1> <p><i>This is temporary tool to lookup account information while explorers and wallets are catching up</i></p> <p> Account ID OR Trust Wallet address OR Public key: </p> <form onsubmit="event.preventDefault(); lookup();"> <p><input type="input" id="account" size="100" autocapitalize="off"></p> <script id="template" type="x-tmpl-mustache">
     <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
         <div class="ui grid sc-iuJeZd eYdFHY">
           <div class="row border-top">
@@ -66,4 +66,23 @@
         </div>
         </div>
       </div></div>
-    </script> <p id="account-id"></p> <div id="output"></div> <div> <input type="submit" value="Lookup"> </div> </form> </body></html>
+    </script> <p id="account-id"></p> <div id="output"></div> <div> <input type="submit" value="Lookup"> </div> <script id="pool-template" type="x-tmpl-mustache">
+      <h2>Staking report</h2>
+      {{#scannedNotDone}}
+      <p>Scanning pools {{scanned}} / {{totalPools}}...</p>
+      {{/scannedNotDone}}
+      <table>
+        <tr>
+          <td>Pool Name</td>
+          <td>Staked from Owner Account</td>
+          <td>Staked from Lockup</td>
+        </tr>
+      {{#result}}
+        <tr>
+          <td>{{ accountId }}</td>
+          <td>{{ directBalance }}</td>
+          <td>{{ lockupBalance }}</td>
+        </tr>
+      {{/result}}
+      </table>
+    </script> <div id="pools"></div> </form> </body></html>
