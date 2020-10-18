@@ -1,7 +1,7 @@
 const { Wampy } = require('wampy');
 
 const WAMP_NEAR_EXPLORER_URL = process.env.WAMP_NEAR_EXPLORER_URL || 'wss://near-explorer-wamp.onrender.com/ws'
-const WAMP_NEAR_EXPLORER_TOPIC_PREFIX = process.env.WAMP_NEAR_EXPLORER_TOPIC_PREFIX || 'com.nearprotocol.testnet.explorer'
+const WAMP_NEAR_EXPLORER_TOPIC_PREFIX = process.env.WAMP_NEAR_EXPLORER_TOPIC_PREFIX || 'com.nearprotocol.mainnet.explorer'
 
 const wamp = new Wampy(WAMP_NEAR_EXPLORER_URL, { realm: 'near-explorer' })
 
@@ -36,9 +36,7 @@ async function getLockups() {
         count: 5
     }
 
-    const tx = await queryExplorer(sql, params)
-
-    return tx;
+    return queryExplorer(sql, params)
 }
 
 module.exports = {
