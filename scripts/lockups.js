@@ -83,44 +83,79 @@ function decodeLockupState(lockupContractState) {
   };
 
   const lockupAccountIds = await explorerApi.getLockups();
+  const lockupsInfo = await Promise.all(
+    lockupAccountIds.map(async (lockupAccountId) => {
+      for (;;) {
+        try {
+          const lockupOwnerAccountId = await nearRpc.callViewMethod(
+            lockupAccountId,
+            "get_owner_account_id",
+            {}
+          );
+
+          const lockupStateResponse = await nearRpc.sendJsonRpc("query", {
+            request_type: "view_state",
+            finality: "final",
+            account_id: lockupAccountId,
+            prefix_base64: "U1RBVEU=",
+          });
+          const lockupState = decodeLockupState(
+            Buffer.from(lockupStateResponse.values[0].value, "base64")
+          );
+          //console.log(lockupState, +new Date());
+
+          const isUnlocked =
+            lockupState.releaseDuration === "0" &&
+            lockupState.lockupTimestamp &&
+            parseInt(lockupState.lockupTimestamp.slice(0, -6)) < +new Date();
+
+          const lockupBalance = new BN(
+            await nearRpc.callViewMethod(lockupAccountId, "get_balance", {})
+          );
+
+          const lockupOwnerAccountInfo = await nearRpc.sendJsonRpc("query", {
+            request_type: "view_account",
+            finality: "final",
+            account_id: lockupOwnerAccountId,
+          });
+
+          const lockupOwnerBalance = new BN(lockupOwnerAccountInfo.amount).add(
+            new BN(lockupOwnerAccountInfo.locked)
+          );
+
+          return {
+            lockupAccountId,
+            lockupOwnerAccountId,
+            isUnlocked,
+            lockupBalance,
+            lockupOwnerBalance,
+          };
+        } catch (e) {
+          if (
+            typeof e.message === "string" &&
+            e.message.includes("doesn't exist")
+          ) {
+            console.log(`Skipping ${lockupAccountId} due to`, e);
+            break;
+          }
+          console.log(`Retrying ${lockupAccountId} due to`, e);
+          const timeout = new Promise((resolve) => setTimeout(resolve, 1000));
+          await timeout;
+        }
+      }
+    })
+  );
+
   console.log(
     "lockup-account-id,lockup-owner-account-id,is-unlocked,lockup-balance,owner-balance"
   );
-  for (const lockupAccountId of lockupAccountIds) {
-    const lockupOwnerAccountId = await nearRpc.callViewMethod(
-      lockupAccountId,
-      "get_owner_account_id",
-      {}
-    );
-
-    const lockupStateResponse = await nearRpc.sendJsonRpc("query", {
-      request_type: "view_state",
-      finality: "final",
-      account_id: lockupAccountId,
-      prefix_base64: "U1RBVEU=",
-    });
-    const lockupState = decodeLockupState(
-      Buffer.from(lockupStateResponse.values[0].value, "base64")
-    );
-    //console.log(lockupState, +new Date());
-
-    const isUnlocked =
-      lockupState.releaseDuration === "0" &&
-      lockupState.lockupTimestamp && parseInt(lockupState.lockupTimestamp.slice(0, -6)) < +new Date();
-
-    const lockupBalance = new BN(
-      await nearRpc.callViewMethod(lockupAccountId, "get_balance", {})
-    );
-
-    const lockupOwnerAccountInfo = await nearRpc.sendJsonRpc("query", {
-      request_type: "view_account",
-      finality: "final",
-      account_id: lockupOwnerAccountId,
-    });
-
-    const lockupOwnerBalance = new BN(lockupOwnerAccountInfo.amount).add(
-      new BN(lockupOwnerAccountInfo.locked)
-    );
+  for (const {
+    lockupAccountId,
+    lockupOwnerAccountId,
+    isUnlocked,
+    lockupBalance,
+    lockupOwnerBalance,
+  } of lockupsInfo.filter(it => it)) {
     console.log(
       `${lockupAccountId},${lockupOwnerAccountId},${isUnlocked},${lockupBalance.toString()},${lockupOwnerBalance.toString()}`
     );
