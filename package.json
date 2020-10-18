@@ -3,11 +3,13 @@
     "node": ">= 12"
   },
   "dependencies": {
+    "autobahn": "^20.9.2",
     "bs58": "^4.0.1",
     "js-sha256": "^0.9.0",
     "mustache": "^4.0.1",
     "near-api-js": "^0.29.1",
     "parcel-bundler": "^1.12.4",
+    "prettier": "^2.1.2",
     "wampy": "^5.0.2"
   },
   "scripts": {
