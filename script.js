@@ -104,6 +104,61 @@ async function lookupLockup(near, accountId) {
     }
 }
 
+
+async function fetchPools(masterAccount) {
+    const result = await masterAccount.connection.provider.sendJsonRpc('validators', [null]);
+    const pools = new Set();
+    const stakes = new Map();
+    result.current_validators.forEach((validator) => {
+        pools.add(validator.account_id);
+        stakes.set(validator.account_id, validator.stake);
+    });
+    result.next_validators.forEach((validator) => pools.add(validator.account_id));
+    result.current_proposals.forEach((validator) => pools.add(validator.account_id));
+    let poolsWithFee = [];
+    let promises = []
+    pools.forEach((accountId) => {
+        promises.push((async () => {
+            let stake = nearAPI.utils.format.formatNearAmount(stakes.get(accountId), 2);
+            let fee = await masterAccount.viewFunction(accountId, 'get_reward_fee_fraction', {});
+            poolsWithFee.push({ accountId, stake, fee: `${(fee.numerator * 100 / fee.denominator)}%` });
+        })());
+    });
+    await Promise.all(promises);
+    return poolsWithFee;
+}
+
+async function updateStaking(near, accountId, lookupAccountId) {
+    const template = document.getElementById('pool-template').innerHTML;
+    try {
+        let masterAccount = await near.account(accountId);
+        let pools = await fetchPools(masterAccount);
+        let result = [];
+        for (let i = 0; i < pools.length; ++i) {
+            let directBalance = await masterAccount.viewFunction(pools[i].accountId, "get_account_total_balance", { account_id: accountId });
+            let lockupBalance = "0";
+            if (lookupAccountId) {
+                lockupBalance = await masterAccount.viewFunction(pools[i].accountId, "get_account_total_balance", { account_id: lookupAccountId });
+            }
+            if (directBalance != "0" || lockupBalance != "0") {
+                result.push({
+                    accountId: pools[i].accountId,
+                    directBalance: nearAPI.utils.format.formatNearAmount(directBalance, 2),
+                    lockupBalance: nearAPI.utils.format.formatNearAmount(lockupBalance, 2),
+                });
+            }
+            document.getElementById('pools').innerHTML = Mustache.render(template, {
+                result,
+                scannedNotDone: i < pools.length - 1,
+                scanned: i,
+                totalPools: pools.length,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 async function lookup() {
     const inputAccountId = document.querySelector('#account').value;
     window.location.hash = inputAccountId;
@@ -112,6 +167,7 @@ async function lookup() {
     console.log(accountId);
     let lockupAccountId = '', lockupAmount = 0, totalAmount = 0, ownerAmount = 0, lockupState = null;
     const template = document.getElementById('template').innerHTML;
+    document.getElementById('pools').innerHTML = '';
     try {
         let account = await near.account(accountId);
         let state = await account.state();
@@ -162,6 +218,8 @@ async function lookup() {
         totalAmount: nearAPI.utils.format.formatNearAmount(totalAmount.toString(), 2),
         lockupState,
      });
+
+    await updateStaking(near, accountId, lockupAccountId);
 }
 
 window.nearAPI = nearAPI;
