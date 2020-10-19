@@ -1,7 +1,31 @@
+// Lookup stats for the lockups
+// ============================
+//
+// # How to Use
+//
+// ```
+// $ node scripts/lockups.js
+// ```
+//
+// This produces some logs and prints CSV output at the end, which can be used for the further
+// analysis and comparison.
+//
+// If you want to query some historical data, pass `NEAR_QUERY_AT_BLOCK_HEIGHT` environment
+// variable, and make sure that you use the RPC node that has that block available (most of the
+// NEAR nodes are not archival, so only persist historical data for roughtly 2.5 days).
+//
+// ```
+// env NEAR_QUERY_AT_BLOCK_HEIGHT=19194634 NEAR_RPC_URL=https://rpc.mainnet.near.org node scripts/lockups.js
+// ```
+//
+// NOTE: 19194634 is the last block before Phase 2 unlocked the transfers.
+
 const BN = require("bn.js");
 const nearAPI = require("near-api-js");
 
 const { WampNearExplorerConnection, ExplorerApi } = require("../explorer-api");
+
+const NEAR_QUERY_AT_BLOCK_HEIGHT = process.env.NEAR_QUERY_AT_BLOCK_HEIGHT;
 
 const WAMP_NEAR_EXPLORER_URL =
   process.env.WAMP_NEAR_EXPLORER_URL ||
@@ -10,6 +34,8 @@ const WAMP_NEAR_EXPLORER_TOPIC_PREFIX =
   process.env.WAMP_NEAR_EXPLORER_TOPIC_PREFIX ||
   "com.nearprotocol.mainnet.explorer";
 const NEAR_RPC_URL = process.env.NEAR_RPC_URL || "https://rpc.mainnet.near.org";
+
+const ONE_NEAR = new BN("1 000 000 000 000 000 000 000 000");
 
 function readOption(reader, f) {
   let x = reader.read_u8();
@@ -64,7 +90,7 @@ function decodeLockupState(lockupContractState) {
   };
 }
 
-(async () => {
+(async function () {
   console.log("Lockup analytics");
   const explorerConnection = new WampNearExplorerConnection(
     WAMP_NEAR_EXPLORER_URL
@@ -77,32 +103,58 @@ function decodeLockupState(lockupContractState) {
   const nearRpc = new nearAPI.providers.JsonRpcProvider(NEAR_RPC_URL);
 
   // TODO: Provide an equivalent method in near-api-js, so we don't need to hack it around.
-  nearRpc.callViewMethod = async function (contractName, methodName, args) {
-    const account = new nearAPI.Account({ provider: this });
-    return await account.viewFunction(contractName, methodName, args);
+  nearRpc.callViewMethod = async function (
+    contractId,
+    methodName,
+    args,
+    options
+  ) {
+    args = args || {};
+    const result = await this.sendJsonRpc("query", {
+      request_type: "call_function",
+      account_id: contractId,
+      method_name: methodName,
+      args_base64: Buffer.from(JSON.stringify(args)).toString("base64"),
+      ...options,
+    });
+    if (result.logs && result.logs.length > 0) {
+      console.log(contractId, result.logs);
+    }
+    return (
+      result.result &&
+      result.result.length > 0 &&
+      JSON.parse(Buffer.from(result.result).toString())
+    );
   };
 
   const lockupAccountIds = await explorerApi.getLockups();
+  await explorerConnection.close();
+
+  let queryAtBlockHeight = parseInt(NEAR_QUERY_AT_BLOCK_HEIGHT);
+  if (!queryAtBlockHeight) {
+    const finalBlock = await nearRpc.block({ finality: "final" });
+    queryAtBlockHeight = finalBlock.header.height;
+  }
+
   const lockupsInfo = await Promise.all(
     lockupAccountIds.map(async (lockupAccountId) => {
       for (;;) {
         try {
-          const lockupOwnerAccountId = await nearRpc.callViewMethod(
-            lockupAccountId,
-            "get_owner_account_id",
-            {}
-          );
-
           const lockupStateResponse = await nearRpc.sendJsonRpc("query", {
             request_type: "view_state",
-            finality: "final",
             account_id: lockupAccountId,
-            prefix_base64: "U1RBVEU=",
+            prefix_base64: Buffer.from("STATE").toString("base64"),
+            block_id: queryAtBlockHeight,
           });
+          if (lockupStateResponse.values.length === 0) {
+            console.log(`Skipping ${lockupAccountId} since it does not exist`);
+            break;
+          }
           const lockupState = decodeLockupState(
             Buffer.from(lockupStateResponse.values[0].value, "base64")
           );
-          //console.log(lockupState, +new Date());
+
+          const lockupOwnerAccountId = lockupState.owner;
 
           const isUnlocked =
             lockupState.releaseDuration === "0" &&
@@ -110,13 +162,18 @@ function decodeLockupState(lockupContractState) {
             parseInt(lockupState.lockupTimestamp.slice(0, -6)) < +new Date();
 
           const lockupBalance = new BN(
-            await nearRpc.callViewMethod(lockupAccountId, "get_balance", {})
+            await nearRpc.callViewMethod(
+              lockupAccountId,
+              "get_balance",
+              {},
+              { block_id: queryAtBlockHeight }
+            )
           );
 
           const lockupOwnerAccountInfo = await nearRpc.sendJsonRpc("query", {
             request_type: "view_account",
-            finality: "final",
             account_id: lockupOwnerAccountId,
+            block_id: queryAtBlockHeight,
           });
 
           const lockupOwnerBalance = new BN(lockupOwnerAccountInfo.amount).add(
@@ -147,7 +204,7 @@ function decodeLockupState(lockupContractState) {
   );
 
   console.log(
-    "lockup-account-id,lockup-owner-account-id,is-unlocked,lockup-balance,owner-balance"
+    "lockup-account-id,lockup-owner-account-id,is-unlocked,lockup-balance-near,owner-balance-near"
   );
   for (const {
     lockupAccountId,
@@ -155,9 +212,11 @@ function decodeLockupState(lockupContractState) {
     isUnlocked,
     lockupBalance,
     lockupOwnerBalance,
-  } of lockupsInfo.filter(it => it)) {
+  } of lockupsInfo.filter((it) => it)) {
     console.log(
-      `${lockupAccountId},${lockupOwnerAccountId},${isUnlocked},${lockupBalance.toString()},${lockupOwnerBalance.toString()}`
+      `${lockupAccountId},${lockupOwnerAccountId},${isUnlocked},${lockupBalance
+        .div(ONE_NEAR)
+        .toString()},${lockupOwnerBalance.div(ONE_NEAR).toString()}`
     );
   }
 })().catch((error) => console.error(error));
