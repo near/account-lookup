@@ -53,11 +53,19 @@
           </div>
           {{#lockupState}}
             <div class="row border-top">
-              <div class="four wide computer seven wide mobile four wide tablet column title">Locked<div
+              <div class="four wide computer seven wide mobile four wide tablet column title">Locked up amount<div
                   class="sc-esjQYD gTrsiA trigger"></div>
               </div>
               <div class="six wide computer four wide mobile six wide tablet column">
-                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.lockupAmount }} Ⓝ</div>
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockedAmount }} Ⓝ</div>
+              </div>
+            </div>
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Unlocked amount<div
+                  class="sc-esjQYD gTrsiA trigger"></div>
+              </div>
+              <div class="six wide computer four wide mobile six wide tablet column">
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ unlockedAmount }} Ⓝ</div>
               </div>
             </div>
             <div class="row border-top">
