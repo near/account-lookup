@@ -182,6 +182,8 @@ async function lookup() {
             let duration = parseInt(lockupState.releaseDuration);
             let now = new Date().getTime() * 1000000;
             let passed = now - parseInt(lockupState.lockupTimestamp == null ? phase2Time : lockupState.lockupTimestamp);
+            let releaseComplete = passed > parseInt(lockupState.releaseDuration);
+            console.log(passed, lockupState.releaseDuration, releaseComplete);
             lockupState.releaseDuration = parseInt(lockupState.releaseDuration) / 1000000000 / 60 / 60 / 24;
             lockupState.lockupStart = phase2;
             if (lockupState.lockupTimestamp !== null) {
@@ -212,7 +214,7 @@ async function lookup() {
             totalAmount = totalAmount.add(new BN(lockupAmount));
             lockupState.lockupAmount = nearAPI.utils.format.formatNearAmount(lockupAmount.toString(), 2);
             if (!lockupState.transferInformation.transfers_timestamp) {
-                if (lockupState.releaseDuration) {
+                if (lockupState.releaseDuration && !releaseComplete) {
                     unlockedAmount = (new BN(lockupAmount)).mul(new BN(passed)).div(new BN(duration.toString()));
                     lockedAmount = (new BN(lockupAmount)).sub(unlockedAmount);
                 } else {
