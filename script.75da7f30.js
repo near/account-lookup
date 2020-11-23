@@ -22873,7 +22873,7 @@ function lookup() {
 
 function _lookup() {
   _lookup = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
-    var inputAccountId, near, accountId, lockupAccountId, lockupAmount, totalAmount, ownerAmount, lockupState, unlockedAmount, lockedAmount, template, phase2, account, state, _yield$lookupLockup, duration, now, passed, lockupTimestamp, vestingStart, vestingCliff, vestingEnd;
+    var inputAccountId, near, accountId, lockupAccountId, lockupAmount, totalAmount, ownerAmount, lockupState, unlockedAmount, lockedAmount, template, phase2, account, state, _yield$lookupLockup, duration, now, passed, releaseComplete, lockupTimestamp, vestingStart, vestingCliff, vestingEnd;
 
     return regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) {
@@ -22916,13 +22916,15 @@ function _lookup() {
             lockupState = _yield$lookupLockup.lockupState;
 
             if (!(lockupAmount !== 0)) {
-              _context6.next = 48;
+              _context6.next = 50;
               break;
             }
 
             duration = parseInt(lockupState.releaseDuration);
             now = new Date().getTime() * 1000000;
             passed = now - parseInt(lockupState.lockupTimestamp == null ? phase2Time : lockupState.lockupTimestamp);
+            releaseComplete = passed > parseInt(lockupState.releaseDuration);
+            console.log(passed, lockupState.releaseDuration, releaseComplete);
             lockupState.releaseDuration = parseInt(lockupState.releaseDuration) / 1000000000 / 60 / 60 / 24;
             lockupState.lockupStart = phase2;
 
@@ -22960,11 +22962,11 @@ function _lookup() {
             lockupState.lockupAmount = nearAPI.utils.format.formatNearAmount(lockupAmount.toString(), 2);
 
             if (lockupState.transferInformation.transfers_timestamp) {
-              _context6.next = 42;
+              _context6.next = 44;
               break;
             }
 
-            if (lockupState.releaseDuration) {
+            if (lockupState.releaseDuration && !releaseComplete) {
               unlockedAmount = new _bn.default(lockupAmount).mul(new _bn.default(passed)).div(new _bn.default(duration.toString()));
               lockedAmount = new _bn.default(lockupAmount).sub(unlockedAmount);
             } else {
@@ -22972,27 +22974,27 @@ function _lookup() {
               lockedAmount = '0';
             }
 
-            _context6.next = 48;
+            _context6.next = 50;
             break;
-
-          case 42:
-            _context6.next = 44;
-            return account.viewFunction(lockupAccountId, 'get_locked_amount', {});
 
           case 44:
+            _context6.next = 46;
+            return account.viewFunction(lockupAccountId, 'get_locked_amount', {});
+
+          case 46:
             lockedAmount = _context6.sent;
-            _context6.next = 47;
+            _context6.next = 49;
             return account.viewFunction(lockupAccountId, 'get_liquid_owners_balance', {});
 
-          case 47:
+          case 49:
             unlockedAmount = _context6.sent;
 
-          case 48:
-            _context6.next = 58;
+          case 50:
+            _context6.next = 60;
             break;
 
-          case 50:
-            _context6.prev = 50;
+          case 52:
+            _context6.prev = 52;
             _context6.t0 = _context6["catch"](12);
             console.log(_context6.t0);
 
@@ -23005,7 +23007,7 @@ function _lookup() {
             lockupAmount = 0;
             unlockedAmount = 0;
 
-          case 58:
+          case 60:
             console.log(lockupState);
             document.getElementById('output').innerHTML = _mustache.default.render(template, {
               accountId: accountId,
@@ -23016,15 +23018,15 @@ function _lookup() {
               unlockedAmount: nearAPI.utils.format.formatNearAmount(unlockedAmount.toString(), 2),
               lockupState: lockupState
             });
-            _context6.next = 62;
+            _context6.next = 64;
             return updateStaking(near, accountId, lockupAccountId);
 
-          case 62:
+          case 64:
           case "end":
             return _context6.stop();
         }
       }
-    }, _callee6, null, [[12, 50]]);
+    }, _callee6, null, [[12, 52]]);
   }));
   return _lookup.apply(this, arguments);
 }
@@ -23066,7 +23068,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57385" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61016" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
