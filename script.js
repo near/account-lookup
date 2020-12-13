@@ -181,8 +181,8 @@ async function lookup() {
         if (lockupAmount !== 0) {
             let duration = parseInt(lockupState.releaseDuration);
             let now = new Date().getTime() * 1000000;
-            let passed = now - parseInt(lockupState.lockupTimestamp == null ? phase2Time : lockupState.lockupTimestamp);
-            let releaseComplete = passed > parseInt(lockupState.releaseDuration);
+            let passed = now - parseInt(lockupState.lockupTimestamp == null ? phase2Time : (lockupState.lockupTimestamp + lockupState.lockupDuration));
+            let releaseComplete = lockupState.releaseDuration ? passed > parseInt(lockupState.releaseDuration) : passed > parseInt(lockupState.lockupDuration);
             console.log(passed, lockupState.releaseDuration, releaseComplete);
             lockupState.releaseDuration = parseInt(lockupState.releaseDuration) / 1000000000 / 60 / 60 / 24;
             lockupState.lockupStart = phase2;
@@ -214,16 +214,24 @@ async function lookup() {
             totalAmount = totalAmount.add(new BN(lockupAmount));
             lockupState.lockupAmount = nearAPI.utils.format.formatNearAmount(lockupAmount.toString(), 2);
             if (!lockupState.transferInformation.transfers_timestamp) {
-                if (lockupState.releaseDuration && !releaseComplete) {
-                    unlockedAmount = (new BN(lockupAmount)).mul(new BN(passed)).div(new BN(duration.toString()));
-                    lockedAmount = (new BN(lockupAmount)).sub(unlockedAmount);
-                } else {
+                if (releaseComplete) {
                     unlockedAmount = lockupAmount;
                     lockedAmount = '0';
+                } else {
+                    if (lockupState.releaseDuration) {
+                        unlockedAmount = (new BN(lockupAmount)).mul(new BN(passed)).div(new BN(duration.toString()));
+                        lockedAmount = (new BN(lockupAmount)).sub(unlockedAmount);
+                    } else if (!releaseComplete) {
+                        unlockedAmount = '0';
+                        lockedAmount = lockupAmount;
+                    }
                 }
             } else {
                 lockedAmount = await account.viewFunction(lockupAccountId, 'get_locked_amount', {});
                 unlockedAmount = await account.viewFunction(lockupAccountId, 'get_liquid_owners_balance', {});
+            }
+            if (!lockupState.releaseDuration) {
+                lockupState.releaseDuration = "0";
             }
         }
     } catch (error) {
