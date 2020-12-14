@@ -22916,14 +22916,14 @@ function _lookup() {
             lockupState = _yield$lookupLockup.lockupState;
 
             if (!(lockupAmount !== 0)) {
-              _context6.next = 50;
+              _context6.next = 51;
               break;
             }
 
             duration = parseInt(lockupState.releaseDuration);
             now = new Date().getTime() * 1000000;
-            passed = now - parseInt(lockupState.lockupTimestamp == null ? phase2Time : lockupState.lockupTimestamp);
-            releaseComplete = passed > parseInt(lockupState.releaseDuration);
+            passed = now - parseInt(lockupState.lockupTimestamp == null ? phase2Time : lockupState.lockupTimestamp + lockupState.lockupDuration);
+            releaseComplete = lockupState.releaseDuration ? passed > parseInt(lockupState.releaseDuration) : passed > parseInt(lockupState.lockupDuration);
             console.log(passed, lockupState.releaseDuration, releaseComplete);
             lockupState.releaseDuration = parseInt(lockupState.releaseDuration) / 1000000000 / 60 / 60 / 24;
             lockupState.lockupStart = phase2;
@@ -22966,12 +22966,17 @@ function _lookup() {
               break;
             }
 
-            if (lockupState.releaseDuration && !releaseComplete) {
-              unlockedAmount = new _bn.default(lockupAmount).mul(new _bn.default(passed)).div(new _bn.default(duration.toString()));
-              lockedAmount = new _bn.default(lockupAmount).sub(unlockedAmount);
-            } else {
+            if (releaseComplete) {
               unlockedAmount = lockupAmount;
               lockedAmount = '0';
+            } else {
+              if (lockupState.releaseDuration) {
+                unlockedAmount = new _bn.default(lockupAmount).mul(new _bn.default(passed)).div(new _bn.default(duration.toString()));
+                lockedAmount = new _bn.default(lockupAmount).sub(unlockedAmount);
+              } else if (!releaseComplete) {
+                unlockedAmount = '0';
+                lockedAmount = lockupAmount;
+              }
             }
 
             _context6.next = 50;
@@ -22990,11 +22995,16 @@ function _lookup() {
             unlockedAmount = _context6.sent;
 
           case 50:
-            _context6.next = 60;
+            if (!lockupState.releaseDuration) {
+              lockupState.releaseDuration = "0";
+            }
+
+          case 51:
+            _context6.next = 61;
             break;
 
-          case 52:
-            _context6.prev = 52;
+          case 53:
+            _context6.prev = 53;
             _context6.t0 = _context6["catch"](12);
             console.log(_context6.t0);
 
@@ -23007,7 +23017,7 @@ function _lookup() {
             lockupAmount = 0;
             unlockedAmount = 0;
 
-          case 60:
+          case 61:
             console.log(lockupState);
             document.getElementById('output').innerHTML = _mustache.default.render(template, {
               accountId: accountId,
@@ -23018,15 +23028,15 @@ function _lookup() {
               unlockedAmount: nearAPI.utils.format.formatNearAmount(unlockedAmount.toString(), 2),
               lockupState: lockupState
             });
-            _context6.next = 64;
+            _context6.next = 65;
             return updateStaking(near, accountId, lockupAccountId);
 
-          case 64:
+          case 65:
           case "end":
             return _context6.stop();
         }
       }
-    }, _callee6, null, [[12, 52]]);
+    }, _callee6, null, [[12, 53]]);
   }));
   return _lookup.apply(this, arguments);
 }
@@ -23068,7 +23078,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61016" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49903" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
