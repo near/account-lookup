@@ -179,12 +179,22 @@ async function lookup() {
 
         ({ lockupAccountId, lockupAmount, lockupState } = await lookupLockup(near, accountId));
         if (lockupAmount !== 0) {
-            let duration = parseInt(lockupState.releaseDuration);
+            let duration = lockupState.releaseDuration ? new BN (lockupState.releaseDuration.toString()) : new BN(0);
             let now = new Date().getTime() * 1000000;
-            let passed = now - parseInt(lockupState.lockupTimestamp == null ? phase2Time : (lockupState.lockupTimestamp + lockupState.lockupDuration));
-            let releaseComplete = lockupState.releaseDuration ? passed > parseInt(lockupState.releaseDuration) : passed > parseInt(lockupState.lockupDuration);
+            let passed = (new BN(now.toString()).sub(
+              lockupState.lockupTimestamp === null
+                ? new BN(phase2Time.toString())
+                : (new BN(lockupState.lockupTimestamp.toString()).add(new BN(lockupState.lockupDuration.toString())))
+            ));
+            let releaseComplete = duration ? passed.gt(duration) : passed.gt(new BN(lockupState.lockupDuration));
             console.log(passed, lockupState.releaseDuration, releaseComplete);
-            lockupState.releaseDuration = parseInt(lockupState.releaseDuration) / 1000000000 / 60 / 60 / 24;
+            lockupState.releaseDuration = duration.div(
+                new BN("1000000000")
+              )
+                .div(new BN("60"))
+                .div(new BN("60"))
+                .div(new BN("24"))
+                .toString(10);
             lockupState.lockupStart = phase2;
             if (lockupState.lockupTimestamp !== null) {
                 let lockupTimestamp = new Date(parseInt(lockupState.lockupTimestamp) / 1000000);
@@ -219,7 +229,7 @@ async function lookup() {
                     lockedAmount = '0';
                 } else {
                     if (lockupState.releaseDuration) {
-                        unlockedAmount = (new BN(lockupAmount)).mul(new BN(passed)).div(new BN(duration.toString()));
+                        unlockedAmount = (new BN(lockupAmount)).mul(passed).div(duration);
                         lockedAmount = (new BN(lockupAmount)).sub(unlockedAmount);
                     } else if (!releaseComplete) {
                         unlockedAmount = '0';
@@ -245,7 +255,7 @@ async function lookup() {
         unlockedAmount = 0;
     }
     console.log(lockupState);
-    document.getElementById('output').innerHTML = Mustache.render(template, { 
+    document.getElementById('output').innerHTML = Mustache.render(template, {
         accountId,
         lockupAccountId,
         ownerAmount: nearAPI.utils.format.formatNearAmount(ownerAmount, 2),
