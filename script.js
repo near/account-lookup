@@ -171,7 +171,7 @@ async function lookup() {
     const near = await nearAPI.connect(options);
     let accountId = prepareAccountId(inputAccountId);
 
-    let lockupAccountId = '', lockupAmount = 0, totalAmount = 0, ownerAmount = 0, lockupState = null, unlockedAmount = 0, lockedAmount = 0;
+    let lockupAccountId = '', lockupAmount = 0, ownerAmount = 0, lockupState = null, unlockedAmount = 0, lockedAmount = 0;
     const template = document.getElementById('template').innerHTML;
     document.getElementById('pools').innerHTML = '';
     phase2Time = new BN("1602614338293769340");
@@ -281,7 +281,6 @@ async function lookup() {
                 lockedAmount = new BN(lockupAmount);
             }
 
-            totalAmount = new BN(ownerAmount).add(lockedAmount);
             unlockedAmount = (new BN(lockupAmount).sub(lockedAmount)).toString(10);
 
             if (!lockupState.releaseDuration) {
@@ -294,7 +293,6 @@ async function lookup() {
             accountId = `${accountId} doesn't exist`;
         }
         ownerAmount = 0;
-        totalAmount = 0;
         lockupAmount = 0;
         unlockedAmount = 0;
     }
@@ -303,7 +301,7 @@ async function lookup() {
         accountId,
         lockupAccountId,
         ownerAmount: nearAPI.utils.format.formatNearAmount(ownerAmount, 2),
-        totalAmount: nearAPI.utils.format.formatNearAmount(totalAmount.toString(), 2),
+        totalAmount: nearAPI.utils.format.formatNearAmount(new BN(ownerAmount).add(new BN(lockupAmount)).toString(), 2),
         lockedAmount: nearAPI.utils.format.formatNearAmount(lockedAmount.toString(), 2),
         unlockedAmount: nearAPI.utils.format.formatNearAmount(unlockedAmount.toString(), 2),
         lockupState,
