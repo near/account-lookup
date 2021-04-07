@@ -103,7 +103,7 @@ async function lookupLockup(near, accountId) {
         let lockupAccount = await near.account(accountId);
         let lockupAmount = await lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
         let lockupState = await viewLockupState(near.connection, lockupAccountId);
-        return { lockupAccountId, lockupAmount, lockupState: { ...lockupState } };
+        return { lockupAccountId, lockupAmount: lockupState.lockupAmount, lockupState: { ...lockupState } };
     } catch (error) {
         console.error(error);
         return { lockupAccountId: `${lockupAccountId} doesn't exist`, lockupAmount: 0 };
@@ -170,7 +170,7 @@ async function lookup() {
     window.location.hash = inputAccountId;
     const near = await nearAPI.connect(options);
     let accountId = prepareAccountId(inputAccountId);
-    console.log(accountId);
+
     let lockupAccountId = '', lockupAmount = 0, totalAmount = 0, ownerAmount = 0, lockupState = null, unlockedAmount = 0, lockedAmount = 0;
     const template = document.getElementById('template').innerHTML;
     document.getElementById('pools').innerHTML = '';
@@ -184,16 +184,15 @@ async function lookup() {
         totalAmount = new BN(state.amount);
 
         ({ lockupAccountId, lockupAmount, lockupState } = await lookupLockup(near, accountId));
-
         if (lockupAmount !== 0) {
             const lockupTimestamp = BN.max(
                 phase2Time.add(new BN(lockupState.lockupDuration)),
                 new BN(lockupState.lockupTimestamp ? lockupState.lockupTimestamp : 0),
             );
             const duration = lockupState.releaseDuration ? new BN(lockupState.releaseDuration) : new BN(0);
-            const now = new BN(new Date().getTime()).muln(1000000);
+            const now = new BN((new Date().getTime() * 1000000).toString());
 
-            const endTimestamp = phase2Time.add(duration);
+            const endTimestamp = lockupTimestamp.add(duration);
             const timeLeft = endTimestamp.sub(now);
             const releaseComplete = timeLeft.lten(0);
 
@@ -223,7 +222,6 @@ async function lookup() {
             }
 
             const vestingInformation = { ...lockupState.vestingInformation };
-            console.log(vestingInformation);
             let unvestedAmount = new BN(0);
 
             if (lockupState.vestingInformation) {
@@ -262,8 +260,6 @@ async function lookup() {
                 }
             }
 
-            totalAmount = totalAmount.add(new BN(lockupAmount.toString()));
-
             lockupState.lockupAmount = nearAPI.utils.format.formatNearAmount(lockupAmount.toString(), 2);
             if (lockupTimestamp.lte(new BN(now.toString()))) {
                 if (releaseComplete) {
@@ -286,6 +282,7 @@ async function lookup() {
                 lockedAmount = new BN(lockupAmount);
             }
 
+            totalAmount = totalAmount.add(lockedAmount);
             unlockedAmount = (new BN(lockupAmount).sub(lockedAmount)).toString(10);
 
             if (!lockupState.releaseDuration) {
