@@ -103,7 +103,7 @@ async function lookupLockup(near, accountId) {
         let lockupAccount = await near.account(accountId);
         let lockupAmount = await lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
         let lockupState = await viewLockupState(near.connection, lockupAccountId);
-        return { lockupAccountId, lockupAmount: lockupState.lockupAmount, lockupState: { ...lockupState } };
+        return { lockupAccountId, lockupAmount, lockupState: { ...lockupState } };
     } catch (error) {
         console.error(error);
         return { lockupAccountId: `${lockupAccountId} doesn't exist`, lockupAmount: 0 };
@@ -181,7 +181,6 @@ async function lookup() {
         let state = await account.state();
 
         ownerAmount = state.amount;
-        totalAmount = new BN(state.amount);
 
         ({ lockupAccountId, lockupAmount, lockupState } = await lookupLockup(near, accountId));
         if (lockupAmount !== 0) {
@@ -282,7 +281,7 @@ async function lookup() {
                 lockedAmount = new BN(lockupAmount);
             }
 
-            totalAmount = totalAmount.add(lockedAmount);
+            totalAmount = new BN(ownerAmount).add(lockedAmount);
             unlockedAmount = (new BN(lockupAmount).sub(lockedAmount)).toString(10);
 
             if (!lockupState.releaseDuration) {
