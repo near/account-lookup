@@ -22698,7 +22698,7 @@ function lookupLockup(_x3, _x4) {
 
 function _lookupLockup() {
   _lookupLockup = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(near, accountId) {
-    var lockupAccountId, lockupAccount, lockupAmount, lockupState;
+    var lockupAccountId, lockupAccount, lockupAccountBalance, lockupState;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
@@ -22715,7 +22715,7 @@ function _lookupLockup() {
             return lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
 
           case 8:
-            lockupAmount = _context2.sent;
+            lockupAccountBalance = _context2.sent;
             _context2.next = 11;
             return viewLockupState(near.connection, lockupAccountId);
 
@@ -22723,7 +22723,7 @@ function _lookupLockup() {
             lockupState = _context2.sent;
             return _context2.abrupt("return", {
               lockupAccountId: lockupAccountId,
-              lockupAmount: lockupAmount,
+              lockupAccountBalance: lockupAccountBalance,
               lockupState: _objectSpread({}, lockupState)
             });
 
@@ -22919,7 +22919,7 @@ function lookup() {
 
 function _lookup() {
   _lookup = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
-    var inputAccountId, near, accountId, lockupAccountId, lockupAmount, ownerAmount, lockupState, unlockedAmount, lockedAmount, template, phase2, account, state, _yield$lookupLockup, lockupTimestamp, duration, now, endTimestamp, timeLeft, releaseComplete, _lockupTimestamp, _vestingInformation, unvestedAmount, vestingStart, vestingCliff, vestingEnd, vestingTimeLeft, vestingTotalTime;
+    var inputAccountId, near, accountId, lockupAccountId, lockupAccountBalance, ownerAccountBalance, lockupState, lockedAmount, template, phase2, account, state, _yield$lookupLockup, lockupTimestamp, duration, now, endTimestamp, timeLeft, releaseComplete, _lockupTimestamp, _vestingInformation, unvestedAmount, vestingStart, vestingCliff, vestingEnd, vestingTimeLeft, vestingTotalTime;
 
     return regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) {
@@ -22933,7 +22933,7 @@ function _lookup() {
           case 4:
             near = _context6.sent;
             accountId = prepareAccountId(inputAccountId);
-            lockupAccountId = '', lockupAmount = 0, ownerAmount = 0, lockupState = null, unlockedAmount = 0, lockedAmount = 0;
+            lockupAccountId = '', lockupAccountBalance = 0, ownerAccountBalance = 0, lockupState = null, lockedAmount = 0;
             template = document.getElementById('template').innerHTML;
             document.getElementById('pools').innerHTML = '';
             phase2Time = new _bn.default("1602614338293769340");
@@ -22949,17 +22949,17 @@ function _lookup() {
 
           case 17:
             state = _context6.sent;
-            ownerAmount = state.amount;
+            ownerAccountBalance = state.amount;
             _context6.next = 21;
             return lookupLockup(near, accountId);
 
           case 21:
             _yield$lookupLockup = _context6.sent;
             lockupAccountId = _yield$lookupLockup.lockupAccountId;
-            lockupAmount = _yield$lookupLockup.lockupAmount;
+            lockupAccountBalance = _yield$lookupLockup.lockupAccountBalance;
             lockupState = _yield$lookupLockup.lockupState;
 
-            if (lockupAmount !== 0) {
+            if (lockupAccountBalance !== 0) {
               lockupTimestamp = _bn.default.max(phase2Time.add(new _bn.default(lockupState.lockupDuration)), new _bn.default(lockupState.lockupTimestamp ? lockupState.lockupTimestamp : 0));
               duration = lockupState.releaseDuration ? new _bn.default(lockupState.releaseDuration) : new _bn.default(0);
               now = new _bn.default((new Date().getTime() * 1000000).toString());
@@ -22999,13 +22999,13 @@ function _lookup() {
                     lockupState.vestingInformation = "from ".concat(vestingStart, " until ").concat(vestingEnd, " with cliff at ").concat(vestingCliff);
 
                     if (now.lt(_vestingInformation.vestingCliff)) {
-                      unvestedAmount = new _bn.default(lockupAmount);
+                      unvestedAmount = new _bn.default(lockupState.lockupAmount);
                     } else if (now.gte(_vestingInformation.vestingEnd)) {
                       unvestedAmount = new _bn.default(0);
                     } else {
                       vestingTimeLeft = _vestingInformation.vestingEnd.sub(now);
                       vestingTotalTime = _vestingInformation.vestingEnd.sub(_vestingInformation.vestingStart);
-                      unvestedAmount = new _bn.default(lockupAmount).mul(vestingTimeLeft).div(vestingTotalTime);
+                      unvestedAmount = new _bn.default(lockupState.lockupAmount).mul(vestingTimeLeft).div(vestingTotalTime);
                     }
                   } else {
                     lockupState.vestingInformation = null;
@@ -23013,31 +23013,27 @@ function _lookup() {
                 }
               }
 
-              lockupState.lockupAmount = nearAPI.utils.format.formatNearAmount(lockupAmount.toString(), 2);
-
               if (lockupTimestamp.lte(new _bn.default(now.toString()))) {
                 if (releaseComplete) {
                   lockedAmount = new _bn.default(0);
                 } else {
                   if (lockupState.releaseDuration) {
-                    lockedAmount = new _bn.default(lockupAmount).mul(timeLeft).div(duration);
+                    lockedAmount = new _bn.default(lockupState.lockupAmount).mul(timeLeft).div(duration);
                     lockedAmount = _bn.default.max(lockedAmount.sub(new _bn.default(lockupState.terminationWithdrawnTokens)), unvestedAmount);
                   } else {
-                    lockedAmount = new _bn.default(lockupAmount);
+                    lockedAmount = new _bn.default(lockupState.lockupAmount);
                   }
                 }
               } else {
-                lockedAmount = new _bn.default(lockupAmount);
+                lockedAmount = new _bn.default(lockupState.lockupAmount);
               }
-
-              unlockedAmount = new _bn.default(lockupAmount).sub(lockedAmount).toString(10);
 
               if (!lockupState.releaseDuration) {
                 lockupState.releaseDuration = "0";
               }
             }
 
-            _context6.next = 35;
+            _context6.next = 34;
             break;
 
           case 28:
@@ -23049,25 +23045,24 @@ function _lookup() {
               accountId = "".concat(accountId, " doesn't exist");
             }
 
-            ownerAmount = 0;
-            lockupAmount = 0;
-            unlockedAmount = 0;
+            ownerAccountBalance = 0;
+            lockupAccountBalance = 0;
 
-          case 35:
+          case 34:
             console.log(lockupState);
             document.getElementById('output').innerHTML = _mustache.default.render(template, {
               accountId: accountId,
               lockupAccountId: lockupAccountId,
-              ownerAmount: nearAPI.utils.format.formatNearAmount(ownerAmount, 2),
-              totalAmount: nearAPI.utils.format.formatNearAmount(new _bn.default(ownerAmount).add(new _bn.default(lockupAmount)).toString(), 2),
+              ownerAccountBalance: nearAPI.utils.format.formatNearAmount(ownerAccountBalance, 2),
               lockedAmount: nearAPI.utils.format.formatNearAmount(lockedAmount.toString(), 2),
-              unlockedAmount: nearAPI.utils.format.formatNearAmount(unlockedAmount.toString(), 2),
+              liquidAmount: nearAPI.utils.format.formatNearAmount(new _bn.default(lockupAccountBalance).sub(lockedAmount).toString(), 2),
+              totalAmount: nearAPI.utils.format.formatNearAmount(new _bn.default(ownerAccountBalance).add(new _bn.default(lockupAccountBalance)).toString(), 2),
               lockupState: lockupState
             });
-            _context6.next = 39;
+            _context6.next = 38;
             return updateStaking(near, accountId, lockupAccountId);
 
-          case 39:
+          case 38:
           case "end":
             return _context6.stop();
         }
@@ -23114,7 +23109,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61546" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56328" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

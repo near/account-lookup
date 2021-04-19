@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lookup your account</title><link rel="stylesheet" href="wallet.4c9932bc.css"><link rel="stylesheet" href="style.ddf7c1ae.css"><script src="script.029b738f.js" defer></script></head><body> <h1>Account lockup lookup</h1> <p><i>This is temporary tool to lookup account information while explorers and wallets are catching up</i></p> <p> Account ID OR Trust Wallet address OR Public key: </p> <form onsubmit="event.preventDefault(); lookup();"> <p><input type="input" id="account" size="100" autocapitalize="off"></p> <script id="template" type="x-tmpl-mustache">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lookup your account</title><link rel="stylesheet" href="wallet.4c9932bc.css"><link rel="stylesheet" href="style.ddf7c1ae.css"><script src="script.48d264ad.js" defer></script></head><body> <h1>Account lockup lookup</h1> <p><i>This is temporary tool to lookup account information while explorers and wallets are catching up</i></p> <p> Account ID OR Trust Wallet address OR Public key: </p> <form onsubmit="event.preventDefault(); lookup();"> <p><input type="input" id="account" size="100" autocapitalize="off"></p> <script id="template" type="x-tmpl-mustache">
     <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
         <div class="ui grid sc-iuJeZd eYdFHY">
           <div class="row border-top">
@@ -51,7 +51,14 @@
             <div class="row border-top">
               <div class="four wide computer seven wide mobile four wide tablet column title">Release start date</div>
               <div class="six wide computer four wide mobile six wide tablet column">
-                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.lockupStart }}</div>
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupReleaseStartDate }}</div>
+                {{#lockupState.hasBrokenTimestamp}}
+                  <div role="list" class="ui list sc-ifAKCX hmHZHq">
+                    (The lockup contract implementation
+                    <a href="https://github.com/near/core-contracts/pull/136" target="_blank">used to have an incorrect handling of the start date</a>,
+                    so it falled back to Phase 2 date. Most probably you have more tokens unlocked than you would expect; use them wisely!)
+                  </div>
+                {{/lockupState.hasBrokenTimestamp}}
               </div>
             </div>
             {{#lockupState.lockupDuration}}
