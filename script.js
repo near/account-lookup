@@ -97,13 +97,15 @@ const options = {
 };
 
 async function lookupLockup(near, accountId) {
-    let lockupAccountId = accountToLockup('lockup.near', accountId);
+    const lockupAccountId = accountToLockup('lockup.near', accountId);
     console.log(lockupAccountId);
     try {
-        let lockupAccount = await near.account(accountId);
-        let lockupAccountBalance = await lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
-        let lockupState = await viewLockupState(near.connection, lockupAccountId);
-        return { lockupAccountId, lockupAccountBalance, lockupState: { ...lockupState } };
+        const lockupAccount = await near.account(lockupAccountId);
+        const lockupAccountBalance = await lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
+        const lockupState = await viewLockupState(near.connection, lockupAccountId);
+        // More details: https://github.com/near/core-contracts/pull/136
+        lockupState.hasBrokenTimestamp = (await lockupAccount.state()).code_hash === '3kVY9qcVRoW3B5498SMX6R3rtSLiCdmBzKs7zcnzDJ7Q' && lockupState.lockupTimestamp !== null;
+        return { lockupAccountId, lockupAccountBalance, lockupState };
     } catch (error) {
         console.error(error);
         return { lockupAccountId: `${lockupAccountId} doesn't exist`, lockupAmount: 0 };
@@ -171,11 +173,11 @@ async function lookup() {
     const near = await nearAPI.connect(options);
     let accountId = prepareAccountId(inputAccountId);
 
-    let lockupAccountId = '', lockupAccountBalance = 0, ownerAccountBalance = 0, lockupState = null, lockedAmount = 0;
+    let lockupAccountId = '', lockupAccountBalance = 0, ownerAccountBalance = 0, lockupReleaseStartTimestamp, lockupState = null, lockedAmount = 0;
     const template = document.getElementById('template').innerHTML;
     document.getElementById('pools').innerHTML = '';
-    phase2Time = new BN("1602614338293769340");
-    let phase2 = new Date(phase2Time / 1000000);
+    phase2Timestamp = new BN("1602614338293769340");
+    let phase2 = new Date(phase2Timestamp.divn(1000000).toNumber());
     try {
         let account = await near.account(accountId);
         let state = await account.state();
@@ -184,18 +186,16 @@ async function lookup() {
 
         ({ lockupAccountId, lockupAccountBalance, lockupState } = await lookupLockup(near, accountId));
         if (lockupAccountBalance !== 0) {
-            const lockupTimestamp = BN.max(
-                phase2Time.add(new BN(lockupState.lockupDuration)),
-                new BN(lockupState.lockupTimestamp ? lockupState.lockupTimestamp : 0),
+            lockupReleaseStartTimestamp = BN.max(
+                phase2Timestamp.add(new BN(lockupState.lockupDuration)),
+                new BN(!lockupState.hasBrokenTimestamp && lockupState.lockupTimestamp ? lockupState.lockupTimestamp : 0),
             );
             const duration = lockupState.releaseDuration ? new BN(lockupState.releaseDuration) : new BN(0);
             const now = new BN((new Date().getTime() * 1000000).toString());
 
-            const endTimestamp = lockupTimestamp.add(duration);
+            const endTimestamp = lockupReleaseStartTimestamp.add(duration);
             const timeLeft = endTimestamp.sub(now);
             const releaseComplete = timeLeft.lten(0);
-
-            console.log(timeLeft.toString(10), lockupState.releaseDuration, releaseComplete);
 
             lockupState.releaseDuration = lockupState.releaseDuration ? duration
                 .div(new BN("1000000000"))
@@ -204,15 +204,6 @@ async function lookup() {
                 .divn(24)
                 .toString(10)
               : null;
-
-            lockupState.lockupStart = phase2;
-
-            if (lockupState.lockupTimestamp !== null) {
-                let lockupTimestamp = new Date(parseInt(lockupState.lockupTimestamp) / 1000000);
-                if (phase2 < lockupState.lockupTimestamp) {
-                    lockupState.lockupStart = lockupTimestamp;
-                }
-            }
 
             if (lockupState.lockupDuration) {
                 lockupState.lockupDuration = parseInt(lockupState.lockupDuration) / 1000000000 / 60 / 60 / 24;
@@ -259,7 +250,7 @@ async function lookup() {
                 }
             }
 
-            if (lockupTimestamp.lte(new BN(now.toString()))) {
+            if (lockupReleaseStartTimestamp.lte(new BN(now.toString()))) {
                 if (releaseComplete) {
                     lockedAmount = new BN(0);
                 } else {
@@ -293,6 +284,7 @@ async function lookup() {
         lockupAccountBalance = 0;
     }
     console.log(lockupState);
+
     document.getElementById('output').innerHTML = Mustache.render(template, {
         accountId,
         lockupAccountId,
@@ -300,6 +292,7 @@ async function lookup() {
         lockedAmount: nearAPI.utils.format.formatNearAmount(lockedAmount.toString(), 2),
         liquidAmount: nearAPI.utils.format.formatNearAmount(new BN(lockupAccountBalance).sub(lockedAmount).toString(), 2),
         totalAmount: nearAPI.utils.format.formatNearAmount(new BN(ownerAccountBalance).add(new BN(lockupAccountBalance)).toString(), 2),
+        lockupReleaseStartDate: new Date(lockupReleaseStartTimestamp.divn(1000000).toNumber()),
         lockupState,
      });
 
