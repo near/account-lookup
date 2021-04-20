@@ -104,7 +104,7 @@ async function lookupLockup(near, accountId) {
         const lockupAccountBalance = await lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
         const lockupState = await viewLockupState(near.connection, lockupAccountId);
         // More details: https://github.com/near/core-contracts/pull/136
-        lockupState.hasBrokenTimestamp = (await lockupAccount.state()).code_hash === '3kVY9qcVRoW3B5498SMX6R3rtSLiCdmBzKs7zcnzDJ7Q' && lockupState.lockupTimestamp !== null;
+        lockupState.hasBrokenTimestamp = (await lockupAccount.state()).code_hash === '3kVY9qcVRoW3B5498SMX6R3rtSLiCdmBzKs7zcnzDJ7Q';
         return { lockupAccountId, lockupAccountBalance, lockupState };
     } catch (error) {
         console.error(error);
@@ -188,12 +188,12 @@ async function lookup() {
         if (lockupAccountBalance !== 0) {
             lockupReleaseStartTimestamp = BN.max(
                 phase2Timestamp.add(new BN(lockupState.lockupDuration)),
-                new BN(!lockupState.hasBrokenTimestamp && lockupState.lockupTimestamp ? lockupState.lockupTimestamp : 0),
+                new BN(lockupState.lockupTimestamp ? lockupState.lockupTimestamp : 0),
             );
             const duration = lockupState.releaseDuration ? new BN(lockupState.releaseDuration) : new BN(0);
             const now = new BN((new Date().getTime() * 1000000).toString());
 
-            const endTimestamp = lockupReleaseStartTimestamp.add(duration);
+            const endTimestamp = (lockupState.hasBrokenTimestamp ? phase2Timestamp : lockupReleaseStartTimestamp).add(duration);
             const timeLeft = endTimestamp.sub(now);
             const releaseComplete = timeLeft.lten(0);
 
