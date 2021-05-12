@@ -264,11 +264,11 @@ async function lookup() {
                             unvestedAmount,
                         )
                     } else {
-                        lockedAmount = new BN(lockupState.lockupAmount);
+                        lockedAmount = new BN(lockupState.lockupAmount).sub(new BN(lockupState.terminationWithdrawnTokens));
                     }
                 }
             } else {
-                lockedAmount = new BN(lockupState.lockupAmount);
+                lockedAmount = new BN(lockupState.lockupAmount).sub(new BN(lockupState.terminationWithdrawnTokens));
             }
 
             if (!lockupState.releaseDuration) {
