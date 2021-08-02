@@ -6,20 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Lookup your account</title>
-    
+
     <!-- import the webpage's stylesheet -->
     <link rel="stylesheet" href="/wallet.css">
     <link rel="stylesheet" href="/style.css">
-    
+
     <!-- import the webpage's javascript file -->
     <script src="/script.js" defer></script>
-  </head>  
+  </head>
   <body>
     <h1>Account lockup lookup</h1>
     <p><i>This is temporary tool to lookup account information while explorers and wallets are catching up</i></p>
-    
+    <p>Check <a href="https://github.com/near/core-contracts/tree/master/lockup#lockup--vesting-contract">the Documentation</a> for more details</p>
+
     <p>
-      Account ID OR Trust Wallet address OR Public key: 
+      Account ID OR Trust Wallet address OR Public key:
     </p>
     <form onsubmit="event.preventDefault(); lookup();">
     <p><input type="input" id="account" size="100" autocapitalize="off"></p>
@@ -69,12 +70,6 @@
               </div>
             </div>
             <div class="row border-top">
-              <div class="four wide computer seven wide mobile four wide tablet column title">Lockup period</div>
-              <div class="six wide computer four wide mobile six wide tablet column">
-                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.releaseDuration }} days</div>
-              </div>
-            </div>
-            <div class="row border-top">
               <div class="four wide computer seven wide mobile four wide tablet column title">Release start date</div>
               <div class="six wide computer four wide mobile six wide tablet column">
                 <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupReleaseStartDate }}</div>
@@ -87,14 +82,12 @@
                 {{/lockupState.hasBrokenTimestamp}}
               </div>
             </div>
-            {{#lockupState.lockupDuration}}
-              <div class="row border-top">
-                <div class="four wide computer seven wide mobile four wide tablet column title">Lockup cliff</div>
-                <div class="six wide computer four wide mobile six wide tablet column">
-                  <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.lockupDuration }} days</div>
-                </div>
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Release duration</div>
+              <div class="six wide computer four wide mobile six wide tablet column">
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.releaseDuration }} days</div>
               </div>
-            {{/lockupState.lockupDuration}}
+            </div>
             {{#lockupState.vestingInformation}}
               <div class="row border-top">
                 <div class="four wide computer seven wide mobile four wide tablet column title">Vesting</div>

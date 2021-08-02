@@ -250,6 +250,14 @@ async function getLockedTokenAmount(lockupState) {
     );
 }
 
+function formatVestingInfo(info) {
+    if (!info.hasOwnProperty("vestingStart")) return "TODO";
+    const vestingStart = new Date(info.vestingStart.divn(1000000).toNumber());
+    const vestingCliff = new Date(info.vestingCliff.divn(1000000).toNumber());
+    const vestingEnd = new Date(info.vestingEnd.divn(1000000).toNumber());
+    return `from ${vestingStart} until ${vestingEnd} with cliff at ${vestingCliff}`;
+}
+
 async function lookup() {
     const inputAccountId = document.querySelector('#account').value;
     window.location.hash = inputAccountId;
@@ -271,6 +279,7 @@ async function lookup() {
             .divn(60)
             .divn(24)
             .toString(10);
+        lockupState.vestingInformation = formatVestingInfo(lockupState.vestingInformation);
     } catch (error) {
         console.error(error);
         if (accountId.length < 64) {
