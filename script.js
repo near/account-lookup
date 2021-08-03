@@ -111,7 +111,7 @@ async function lookupLockup(near, accountId) {
         ].includes((await lockupAccount.state()).code_hash);
         return { lockupAccountId, lockupAccountBalance, lockupState };
     } catch (error) {
-        console.error(error);
+        console.warn(error);
         return { lockupAccountId: `${lockupAccountId} doesn't exist`, lockupAmount: 0 };
     }
 }
@@ -268,7 +268,7 @@ async function lookup() {
     const near = await nearAPI.connect(options);
     let accountId = prepareAccountId(inputAccountId);
 
-    let lockupAccountId = '', lockupAccountBalance = 0, ownerAccountBalance = 0, lockupReleaseStartTimestamp, lockupState = null, lockedAmount = 0;
+    let lockupAccountId = '', lockupAccountBalance = 0, ownerAccountBalance = 0, lockupReleaseStartTimestamp = new BN(0), lockupState = null, lockedAmount = 0;
     const template = document.getElementById('template').innerHTML;
     document.getElementById('pools').innerHTML = '';
     try {
@@ -276,21 +276,18 @@ async function lookup() {
         let state = await account.state();
         ownerAccountBalance = state.amount;
         ({ lockupAccountId, lockupAccountBalance, lockupState } = await lookupLockup(near, accountId));
-        lockupReleaseStartTimestamp = getStartLockupTimestamp(lockupState);
-        lockedAmount = await getLockedTokenAmount(lockupState);
-        lockupState.releaseDuration = lockupState.releaseDuration.div(new BN("1000000000"))
-            .divn(60)
-            .divn(60)
-            .divn(24)
-            .toString(10);
-        lockupState.vestingInformation = formatVestingInfo(lockupState.vestingInformation);
+        if (lockupState) {
+            lockupReleaseStartTimestamp = getStartLockupTimestamp(lockupState);
+            lockedAmount = await getLockedTokenAmount(lockupState);
+            lockupState.releaseDuration = lockupState.releaseDuration.div(new BN("1000000000"))
+              .divn(60)
+              .divn(60)
+              .divn(24)
+              .toString(10);
+            lockupState.vestingInformation = formatVestingInfo(lockupState.vestingInformation);
+        }
     } catch (error) {
         console.error(error);
-        if (accountId.length < 64) {
-            accountId = `${accountId} doesn't exist`;
-        }
-        ownerAccountBalance = 0;
-        lockupAccountBalance = 0;
     }
     console.log(lockupState);
 
