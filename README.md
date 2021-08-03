@@ -6,7 +6,6 @@ This is a temporary tool to get the data from the deployed lockup contracts.
 
 To run this tool locally, use:
 ```
-npm i -g yarn
 yarn
-/usr/local/bin/node /usr/local/lib/node_modules/yarn/bin/yarn.js run start
+yarn start
 ```

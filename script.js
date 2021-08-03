@@ -3,7 +3,7 @@ import 'regenerator-runtime'
 import * as nearAPI from 'near-api-js';
 import BN from 'bn.js';
 import sha256 from 'js-sha256';
-import decode from 'bs58';
+import { encode, decode } from 'bs58';
 import Mustache from 'mustache';
 
 function accountToLockup(masterAccountId, accountId) {
@@ -36,7 +36,7 @@ async function viewLockupState(connection, contractId) {
         request_type: "view_state",
         finality: "final",
         account_id: contractId,
-        prefix_base64: "",
+        prefix_base64: "U1RBVEU=",
     });
     let value = Buffer.from(result.values[0].value, 'base64');
     let reader = new nearAPI.utils.serialize.BinaryReader(value);
@@ -48,7 +48,7 @@ async function viewLockupState(connection, contractId) {
     let lockupTimestamp = readOption(reader, () => reader.read_u64().toString(), "0");
     let tiType = reader.read_u8();
     let transferInformation;
-    if (tiType == 0) {
+    if (tiType === 0) {
         transferInformation = {
             transfers_timestamp: reader.read_u64()
         };
@@ -61,15 +61,19 @@ async function viewLockupState(connection, contractId) {
     let vestingInformation;
     switch (vestingType) {
         case 1:
-            vestingInformation = { VestingHash: reader.read_array(() => reader.read_u8()) };
+            vestingInformation = { vestingHash: reader.read_array(() => reader.read_u8()) };
             break;
         case 2:
-            let vestingStart = reader.read_u64();
-            let vestingCliff = reader.read_u64();
-            let vestingEnd = reader.read_u64();
-            vestingInformation = { vestingStart, vestingCliff, vestingEnd };
+            let start = reader.read_u64();
+            let cliff = reader.read_u64();
+            let end = reader.read_u64();
+            vestingInformation = { start, cliff, end };
             break;
         case 3:
+            let unvestedAmount = reader.read_u128();
+            let terminationStatus = reader.read_u8();
+            vestingInformation = { unvestedAmount, terminationStatus };
+            break;
         default:
             vestingInformation = 'TODO';
             break;
@@ -251,11 +255,11 @@ async function getLockedTokenAmount(lockupState) {
 }
 
 function formatVestingInfo(info) {
-    if (!info.hasOwnProperty("vestingStart")) return "TODO";
-    const vestingStart = new Date(info.vestingStart.divn(1000000).toNumber());
-    const vestingCliff = new Date(info.vestingCliff.divn(1000000).toNumber());
-    const vestingEnd = new Date(info.vestingEnd.divn(1000000).toNumber());
-    return `from ${vestingStart} until ${vestingEnd} with cliff at ${vestingCliff}`;
+    if (!info.hasOwnProperty("start")) return "TODO";
+    const start = new Date(info.start.divn(1000000).toNumber());
+    const cliff = new Date(info.cliff.divn(1000000).toNumber());
+    const end = new Date(info.end.divn(1000000).toNumber());
+    return `from ${start} until ${end} with cliff at ${cliff}`;
 }
 
 async function lookup() {
@@ -295,7 +299,7 @@ async function lookup() {
         lockupAccountId,
         ownerAccountBalance: nearAPI.utils.format.formatNearAmount(ownerAccountBalance, 2),
         lockedAmount: nearAPI.utils.format.formatNearAmount(lockedAmount.toString(), 2),
-        liquidAmount: nearAPI.utils.format.formatNearAmount(new BN(lockupAccountBalance).sub(lockedAmount).toString(), 2),
+        liquidAmount: nearAPI.utils.format.formatNearAmount(new BN(lockupAccountBalance).sub(new BN(lockedAmount)).toString(), 2),
         totalAmount: nearAPI.utils.format.formatNearAmount(new BN(ownerAccountBalance).add(new BN(lockupAccountBalance)).toString(), 2),
         lockupReleaseStartDate: new Date(lockupReleaseStartTimestamp.divn(1000000).toNumber()),
         lockupState,
