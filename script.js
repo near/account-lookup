@@ -196,12 +196,9 @@ async function getLockedTokenAmount(lockupState) {
         );
     }
 
-    let lockupTimestamp = BN.max(
-      phase2Time.add(lockupState.lockupDuration),
-      lockupState.lockupTimestamp
-    );
+    let startTimestamp = getStartLockupTimestamp(lockupState);
     let blockTimestamp = now;
-    if (blockTimestamp.lt(lockupTimestamp)) {
+    if (blockTimestamp.lt(startTimestamp)) {
         return saturatingSub(
           lockupState.lockupAmount,
           lockupState.terminationWithdrawnTokens
@@ -210,7 +207,6 @@ async function getLockedTokenAmount(lockupState) {
 
     let unreleasedAmount;
     if (lockupState.releaseDuration) {
-        let startTimestamp = getStartLockupTimestamp(lockupState);
         let endTimestamp = startTimestamp.add(lockupState.releaseDuration);
         if (endTimestamp.lt(blockTimestamp)) {
             unreleasedAmount = new BN(0);
