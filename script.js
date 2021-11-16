@@ -11,6 +11,7 @@ function accountToLockup(masterAccountId, accountId) {
 }
 
 function prepareAccountId(data) {
+    return data;
     if (data.toLowerCase().endsWith('.near')) {
         return data.replace('@', '').replace('https://wallet.near.org/send-money/', '').toLowerCase();
     }
@@ -92,13 +93,13 @@ async function viewLockupState(connection, contractId) {
 }
 
 const options = {
-    nodeUrl: 'https://rpc.mainnet.near.org',
-    networkId: 'mainnet',
+    nodeUrl: 'https://rpc.testnet.near.org',
+    networkId: 'testnet',
     deps: { }
 };
 
 async function lookupLockup(near, accountId) {
-    const lockupAccountId = accountToLockup('lockup.near', accountId);
+    const lockupAccountId = accountToLockup('lockup.devnet', accountId); //('lockup.near', accountId);
     console.log(lockupAccountId);
     try {
         const lockupAccount = await near.account(lockupAccountId);
@@ -272,9 +273,14 @@ async function lookup() {
     const template = document.getElementById('template').innerHTML;
     document.getElementById('pools').innerHTML = '';
     try {
-        let account = await near.account(accountId);
-        let state = await account.state();
-        ownerAccountBalance = state.amount;
+        try {
+            let account = await near.account(accountId);
+            let state = await account.state();
+            ownerAccountBalance = state.amount;
+        } catch (error) {
+            // 
+            ownerAccountBalance = 0;
+        }
         ({ lockupAccountId, lockupAccountBalance, lockupState } = await lookupLockup(near, accountId));
         if (lockupState) {
             lockupReleaseStartTimestamp = getStartLockupTimestamp(lockupState);
