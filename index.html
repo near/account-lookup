@@ -33,18 +33,6 @@
             <div class="six wide computer four wide mobile six wide tablet column">{{accountId}}</div>
           </div>
           <div class="row border-top">
-            <div class="four wide computer seven wide mobile four wide tablet column title">Lockup account ID</div>
-            <div class="six wide computer four wide mobile six wide tablet column">{{lockupAccountId}}</div>
-          </div>
-          <div class="row border-top">
-            <div class="four wide computer seven wide mobile four wide tablet column title">Total Balance<div
-                class="sc-esjQYD gTrsiA trigger"></div>
-            </div>
-            <div class="six wide computer four wide mobile six wide tablet column">
-              <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ totalAmount }} Ⓝ</div>
-            </div>
-          </div>
-          <div class="row border-top">
             <div class="four wide computer seven wide mobile four wide tablet column title">Owner's Balance<div
                 class="sc-esjQYD gTrsiA trigger"></div>
             </div>
@@ -52,7 +40,30 @@
               <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ ownerAccountBalance }} Ⓝ</div>
             </div>
           </div>
+
           {{#lockupState}}
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Lockup account ID</div>
+              <div class="six wide computer four wide mobile six wide tablet column">{{lockupAccountId}}</div>
+            </div>
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Lockup amount<div
+                  class="sc-esjQYD gTrsiA trigger"></div>
+              </div>
+              <div class="six wide computer four wide mobile six wide tablet column">
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupAmount }} Ⓝ</div>
+              </div>
+            </div>
+
+            <div class="row border-top">
+              <div class="four wide computer seven wide mobile four wide tablet column title">Total Balance<div
+                  class="sc-esjQYD gTrsiA trigger"></div>
+              </div>
+              <div class="six wide computer four wide mobile six wide tablet column">
+                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ totalAmount }} Ⓝ</div>
+              </div>
+            </div>
+
             <div class="row border-top">
               <div class="four wide computer seven wide mobile four wide tablet column title">Locked up amount<div
                   class="sc-esjQYD gTrsiA trigger"></div>

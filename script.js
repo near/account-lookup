@@ -6,6 +6,9 @@ import sha256 from 'js-sha256';
 import { encode, decode } from 'bs58';
 import Mustache from 'mustache';
 
+// https://near.org/blog/near-mainnet-phase-2-unrestricted-decentralized/
+const phase2Time = new BN("1602614338293769340");
+
 function accountToLockup(masterAccountId, accountId) {
     return `${sha256(Buffer.from(accountId)).toString('hex').slice(0, 40)}.${masterAccountId}`;
 }
@@ -105,6 +108,7 @@ async function lookupLockup(near, accountId) {
         const lockupAccountBalance = await lockupAccount.viewFunction(lockupAccountId, 'get_balance', {});
         const lockupState = await viewLockupState(near.connection, lockupAccountId);
         // More details: https://github.com/near/core-contracts/pull/136
+        console.log(lockupState.lockupTimestamp, lockupState.lockupTimestamp.eqn(0), lockupState.lockupTimestamp.eq(new BN(0)))
         lockupState.hasBrokenTimestamp = [
             '3kVY9qcVRoW3B5498SMX6R3rtSLiCdmBzKs7zcnzDJ7Q',
             'DiC9bKCqUHqoYqUXovAnqugiuntHWnM3cAc7KrgaHTu'
@@ -171,15 +175,6 @@ async function updateStaking(near, accountId, lookupAccountId) {
     }
 }
 
-function getStartLockupTimestamp(lockupState) {
-    const phase2Time = new BN("1602614338293769340");
-    let lockupTimestamp = BN.max(
-      phase2Time.add(lockupState.lockupDuration),
-      lockupState.lockupTimestamp
-    );
-    return lockupState.hasBrokenTimestamp ? phase2Time : lockupTimestamp;
-}
-
 const saturatingSub = (a, b) => {
     let res = a.sub(b);
     return res.gte(new BN(0)) ? res : new BN(0);
@@ -187,7 +182,6 @@ const saturatingSub = (a, b) => {
 
 // https://github.com/near/core-contracts/blob/master/lockup/src/getters.rs#L64
 async function getLockedTokenAmount(lockupState) {
-    const phase2Time = new BN("1602614338293769340");
     let now = new BN((new Date().getTime() * 1000000).toString());
     if (now.lte(phase2Time)) {
         return saturatingSub(
@@ -210,12 +204,14 @@ async function getLockedTokenAmount(lockupState) {
 
     let unreleasedAmount;
     if (lockupState.releaseDuration) {
-        let startTimestamp = getStartLockupTimestamp(lockupState);
+        // More details: https://github.com/near/core-contracts/pull/136
+        let startTimestamp = lockupState.hasBrokenTimestamp ? phase2Time : lockupTimestamp;
         let endTimestamp = startTimestamp.add(lockupState.releaseDuration);
         if (endTimestamp.lt(blockTimestamp)) {
             unreleasedAmount = new BN(0);
         } else {
             let timeLeft = endTimestamp.sub(blockTimestamp);
+          console.log("t", endTimestamp.toString(), blockTimestamp.toString(), timeLeft.toString())
             unreleasedAmount = lockupState.lockupAmount
               .mul(timeLeft)
               .div(lockupState.releaseDuration);
@@ -223,6 +219,8 @@ async function getLockedTokenAmount(lockupState) {
     } else {
         unreleasedAmount = new BN(0);
     }
+  const ONE_NEAR = new BN(10).pow(new BN(24));
+  console.log("unreleased amount", unreleasedAmount.div(ONE_NEAR).toString(), lockupState.terminationWithdrawnTokens.div(ONE_NEAR).toString())
 
     let unvestedAmount;
     if (lockupState.vestingInformation) {
@@ -277,7 +275,17 @@ async function lookup() {
         ownerAccountBalance = state.amount;
         ({ lockupAccountId, lockupAccountBalance, lockupState } = await lookupLockup(near, accountId));
         if (lockupState) {
-            lockupReleaseStartTimestamp = getStartLockupTimestamp(lockupState);
+            // More details: https://github.com/near/core-contracts/pull/136
+            if (lockupState.hasBrokenTimestamp) {
+                lockupReleaseStartTimestamp = phase2Time.add(lockupState.lockupDuration);
+            } else {
+                // https://github.com/near/core-contracts/blob/lockup-v3.0.0/lockup/src/getters.rs#L71-L76
+                lockupReleaseStartTimestamp = BN.max(
+                    phase2Time.add(lockupState.lockupDuration),
+                    lockupState.lockupTimestamp
+                );
+            }
+
             lockedAmount = await getLockedTokenAmount(lockupState);
             lockupState.releaseDuration = lockupState.releaseDuration.div(new BN("1000000000"))
               .divn(60)
@@ -294,6 +302,7 @@ async function lookup() {
     document.getElementById('output').innerHTML = Mustache.render(template, {
         accountId,
         lockupAccountId,
+        lockupAmount: nearAPI.utils.format.formatNearAmount(lockupState.lockupAmount.toString(), 2),
         ownerAccountBalance: nearAPI.utils.format.formatNearAmount(ownerAccountBalance, 2),
         lockedAmount: nearAPI.utils.format.formatNearAmount(lockedAmount.toString(), 2),
         liquidAmount: nearAPI.utils.format.formatNearAmount(new BN(lockupAccountBalance).sub(new BN(lockedAmount)).toString(), 2),
