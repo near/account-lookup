@@ -114,7 +114,6 @@ const options = {
 
 async function lookupLockup(near, accountId) {
   const lockupAccountId = accountToLockup("lockup.near", accountId);
-  console.log(lockupAccountId);
   try {
     const lockupAccount = await near.account(lockupAccountId);
     const lockupAccountBalance = await lockupAccount.viewFunction(
@@ -132,7 +131,7 @@ async function lookupLockup(near, accountId) {
   } catch (error) {
     console.warn(error);
     return {
-      lockupAccountId: `${lockupAccountId} doesn't exist`,
+      lockupAccountId,
       lockupAmount: 0,
     };
   }
@@ -337,6 +336,7 @@ async function lookup() {
     ownerAccountBalance = state.amount;
     ({ lockupAccountId, lockupAccountBalance, lockupState } =
       await lookupLockup(near, accountId));
+
     if (lockupState) {
       lockupReleaseStartTimestamp = getStartLockupTimestamp(lockupState);
       lockedAmount = await getLockedTokenAmount(lockupState);
@@ -353,7 +353,6 @@ async function lookup() {
   } catch (error) {
     console.error(error);
   }
-  console.log(lockupState);
 
   document.getElementById("output").innerHTML = Mustache.render(template, {
     accountId,
