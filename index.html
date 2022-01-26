@@ -1,133 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Lookup your account</title>
 
     <!-- import the webpage's stylesheet -->
-    <link rel="stylesheet" href="/wallet.css">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./fonts/manrope.css" />
 
     <!-- import the webpage's javascript file -->
-    <script src="/script.js" defer></script>
+    <script src="./script.js" defer></script>
   </head>
   <body>
-    <h1>Account lockup lookup</h1>
-    <p><i>This is temporary tool to lookup account information while explorers and wallets are catching up</i></p>
-    <p>Check <a href="https://github.com/near/core-contracts/tree/master/lockup#lockup--vesting-contract">the Documentation</a> for more details</p>
-
-    <p>
-      Account ID OR Trust Wallet address OR Public key:
-    </p>
-    <form onsubmit="event.preventDefault(); lookup();">
-    <p><input type="input" id="account" size="100" autocapitalize="off"></p>
-
-    <script id="template" type="x-tmpl-mustache">
-    <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
-        <div class="ui grid sc-iuJeZd eYdFHY">
-          <div class="row border-top">
-            <div class="four wide computer seven wide mobile four wide tablet column title">Account ID</div>
-            <div class="six wide computer four wide mobile six wide tablet column">{{accountId}}</div>
-          </div>
-          <div class="row border-top">
-            <div class="four wide computer seven wide mobile four wide tablet column title">Lockup account ID</div>
-            <div class="six wide computer four wide mobile six wide tablet column">{{lockupAccountId}}</div>
-          </div>
-          <div class="row border-top">
-            <div class="four wide computer seven wide mobile four wide tablet column title">Total Balance<div
-                class="sc-esjQYD gTrsiA trigger"></div>
-            </div>
-            <div class="six wide computer four wide mobile six wide tablet column">
-              <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ totalAmount }} Ⓝ</div>
-            </div>
-          </div>
-          <div class="row border-top">
-            <div class="four wide computer seven wide mobile four wide tablet column title">Owner's Balance<div
-                class="sc-esjQYD gTrsiA trigger"></div>
-            </div>
-            <div class="six wide computer four wide mobile six wide tablet column">
-              <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ ownerAccountBalance }} Ⓝ</div>
-            </div>
-          </div>
-          {{#lockupState}}
-            <div class="row border-top">
-              <div class="four wide computer seven wide mobile four wide tablet column title">Locked up amount<div
-                  class="sc-esjQYD gTrsiA trigger"></div>
-              </div>
-              <div class="six wide computer four wide mobile six wide tablet column">
-                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockedAmount }} Ⓝ</div>
-              </div>
-            </div>
-            <div class="row border-top">
-              <div class="four wide computer seven wide mobile four wide tablet column title">Liquid amount (unlocked + rewards)<div
-                  class="sc-esjQYD gTrsiA trigger"></div>
-              </div>
-              <div class="six wide computer four wide mobile six wide tablet column">
-                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ liquidAmount }} Ⓝ</div>
-              </div>
-            </div>
-            <div class="row border-top">
-              <div class="four wide computer seven wide mobile four wide tablet column title">Release start date</div>
-              <div class="six wide computer four wide mobile six wide tablet column">
-                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupReleaseStartDate }}</div>
-                {{#lockupState.hasBrokenTimestamp}}
-                  <div role="list" class="ui list sc-ifAKCX hmHZHq">
-                    (The lockup contract implementation
-                    <a href="https://github.com/near/core-contracts/pull/136" target="_blank">used to have an incorrect handling of the start date</a>,
-                    so it falled back to Phase 2 date. Most probably you have more tokens unlocked than you would expect; use them wisely!)
-                  </div>
-                {{/lockupState.hasBrokenTimestamp}}
-              </div>
-            </div>
-            <div class="row border-top">
-              <div class="four wide computer seven wide mobile four wide tablet column title">Release duration</div>
-              <div class="six wide computer four wide mobile six wide tablet column">
-                <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.releaseDuration }} days</div>
-              </div>
-            </div>
-            {{#lockupState.vestingInformation}}
-              <div class="row border-top">
-                <div class="four wide computer seven wide mobile four wide tablet column title">Vesting</div>
-                <div class="six wide computer four wide mobile six wide tablet column">
-                  <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.vestingInformation }}</div>
-                </div>
-              </div>
-            {{/lockupState.vestingInformation}}
-          {{/lockupState}}
-        </div>
-        </div>
-      </div></div>
-    </script>
-
-    <p id="account-id"></p>
-    <div id="output"></div>
-    <div>
-      <input type="submit" value="Lookup">
+    <header>
+      <div class="logo"></div>
+      <div class="header-text">ACCOUNT LOOKUP</div>
+    </header>
+    <div class="title-site">
+      This is temporary tool to lookup account information while explorers and
+      wallets are catching up
     </div>
-    <script id="pool-template" type="x-tmpl-mustache">
-      <h2>Staking report</h2>
-      {{#scannedNotDone}}
-      <p>Scanning pools {{scanned}} / {{totalPools}}...</p>
-      {{/scannedNotDone}}
-      <table>
-        <tr>
-          <td>Pool Name</td>
-          <td>Staked from Owner Account</td>
-          <td>Staked from Lockup</td>
-        </tr>
-      {{#result}}
-        <tr>
-          <td>{{ accountId }}</td>
-          <td>{{ directBalance }}</td>
-          <td>{{ lockupBalance }}</td>
-        </tr>
-      {{/result}}
-      </table>
-    </script>
-    <div id="pools"></div>
-    </form>
+    <div class="title-documentation">
+      Check
+      <a
+        href="https://github.com/near/core-contracts/tree/master/lockup#lockup--vesting-contract"
+        >the Documentation</a
+      >
+      for more details
+    </div>
+    <section>
+      <div class="title-account">
+        Account ID OR Trust Wallet address OR Public key:
+      </div>
+      <form onsubmit="event.preventDefault(); lookup();">
+        <div class="input-wrap">
+          <input
+            class="input-name"
+            type="input"
+            id="account"
+            size="100"
+            autocapitalize="off"
+          />
+          <button type="submit" class="submit-button">
+            <div class="search-icon"></div>
+          </button>
+        </div>
+
+        <script id="template" type="x-tmpl-mustache">
+          <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
+              <div class='info-account'>
+                <div class="row border-top">
+                  <div class="four wide computer seven wide mobile four wide tablet column title">Account ID</div>
+                  <div class="six wide computer four wide mobile six wide tablet column">{{accountId}}</div>
+                </div>
+                <div class="row border-top">
+                  <div class="four wide computer seven wide mobile four wide tablet column title">Lockup account ID</div>
+                  <div class="six wide computer four wide mobile six wide tablet column">{{lockupAccountId}}</div>
+                </div>
+                <div class="row border-top">
+                  <div class="four wide computer seven wide mobile four wide tablet column title">Total Balance<div
+                      class="sc-esjQYD gTrsiA trigger"></div>
+                  </div>
+                  <div class="six wide computer four wide mobile six wide tablet column">
+                    <div role="list" class="ui list sc-ifAKCX hmHZHq icon-wrap">{{ totalAmount }} <div class='near-icon'/></>
+                  </div>
+                </div>
+                <div class="row border-top">
+                  <div class="four wide computer seven wide mobile four wide tablet column title">Owner's Balance<div
+                      class="sc-esjQYD gTrsiA trigger"></div>
+                  </div>
+                  <div class="six wide computer four wide mobile six wide tablet column">
+                    <div role="list" class="ui list sc-ifAKCX hmHZHq icon-wrap">{{ ownerAccountBalance }} <div class='near-icon'/></div>
+                  </div>
+                </div>
+                {{#lockupState}}
+                  <div class="row border-top">
+                    <div class="four wide computer seven wide mobile four wide tablet column title">Locked up amount<div
+                        class="sc-esjQYD gTrsiA trigger"></div>
+                    </div>
+                    <div class="six wide computer four wide mobile six wide tablet column">
+                      <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockedAmount }} Ⓝ</div>
+                    </div>
+                  </div>
+                  <div class="row border-top">
+                    <div class="four wide computer seven wide mobile four wide tablet column title">Liquid amount (unlocked + rewards)<div
+                        class="sc-esjQYD gTrsiA trigger"></div>
+                    </div>
+                    <div class="six wide computer four wide mobile six wide tablet column">
+                      <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ liquidAmount }} Ⓝ</div>
+                    </div>
+                  </div>
+                  <div class="row border-top">
+                    <div class="four wide computer seven wide mobile four wide tablet column title">Release start date</div>
+                    <div class="six wide computer four wide mobile six wide tablet column">
+                      <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupReleaseStartDate }}</div>
+                      {{#lockupState.hasBrokenTimestamp}}
+                        <div role="list" class="ui list sc-ifAKCX hmHZHq">
+                          (The lockup contract implementation
+                          <a href="https://github.com/near/core-contracts/pull/136" target="_blank">used to have an incorrect handling of the start date</a>,
+                          so it falled back to Phase 2 date. Most probably you have more tokens unlocked than you would expect; use them wisely!)
+                        </div>
+                      {{/lockupState.hasBrokenTimestamp}}
+                    </div>
+                  </div>
+                  <div class="row border-top">
+                    <div class="four wide computer seven wide mobile four wide tablet column title">Release duration</div>
+                    <div class="six wide computer four wide mobile six wide tablet column">
+                      <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.releaseDuration }} days</div>
+                    </div>
+                  </div>
+                  {{#lockupState.vestingInformation}}
+                    <div class="row border-top">
+                      <div class="four wide computer seven wide mobile four wide tablet column title">Vesting</div>
+                      <div class="six wide computer four wide mobile six wide tablet column">
+                        <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.vestingInformation }}</div>
+                      </div>
+                    </div>
+                  {{/lockupState.vestingInformation}}
+                {{/lockupState}}
+              </div>
+              </div>
+            </div></div>
+        </script>
+        <div id="output"></div>
+        <script id="pool-template" type="x-tmpl-mustache">
+          <div class='staking-text'>Staking report</div>
+          {{#scannedNotDone}}
+          <p>Scanning pools {{scanned}} / {{totalPools}}...</p>
+          <progress id="file" max={{totalPools}} value={{scanned}}> 70% </progress>
+          {{/scannedNotDone}}
+          <table>
+            <tr>
+              <td>Pool Name</td>
+              <td>Staked from Owner Account</td>
+              <td>Staked from Lockup</td>
+            </tr>
+          {{#result}}
+            <tr>
+              <td>{{ accountId }}</td>
+              <td>{{ directBalance }}</td>
+              <td>{{ lockupBalance }}</td>
+            </tr>
+          {{/result}}
+          </table>
+        </script>
+        <div id="pools"></div>
+      </form>
+    </section>
   </body>
 </html>
