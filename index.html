@@ -23,6 +23,7 @@
       This is temporary tool to lookup account information while explorers and
       wallets are catching up
     </div>
+
     <div class="title-documentation">
       Check
       <a
@@ -51,33 +52,28 @@
 
         <script id="template" type="x-tmpl-mustache">
           <div class="root"><div class="sc-TFwJa eWVEKc App"><div class="ui container sc-jAaTju gkFlhh">
-              <div class='info-account'>
-                <div class="row border-top">
-                  <div class="four wide computer seven wide mobile four wide tablet column title">Account ID</div>
-                  <div class="six wide computer four wide mobile six wide tablet column">{{accountId}}</div>
+              <div>
+                <div class="grid">
+                  <div class="grid-title">Account ID</div>
+                  <div class="grid-value">{{accountId}}</div>
                 </div>
-                <div class="row border-top">
-                  <div class="four wide computer seven wide mobile four wide tablet column title">Lockup account ID</div>
-                  <div class="six wide computer four wide mobile six wide tablet column">{{lockupAccountId}}</div>
+                <div class="grid">
+                  <div class="grid-title">Lockup account ID</div>
+                  <div class="grid-value">{{lockupAccountId}}</div>
                 </div>
-                <div class="row border-top">
-                  <div class="four wide computer seven wide mobile four wide tablet column title">Total Balance<div
-                      class="sc-esjQYD gTrsiA trigger"></div>
-                  </div>
-                  <div class="six wide computer four wide mobile six wide tablet column">
-                    <div role="list" class="ui list sc-ifAKCX hmHZHq icon-wrap">{{ totalAmount }} <div class='near-icon'/></>
-                  </div>
+              </div>
+              <div class='grid'>
+                <div class='grid-title'>Total Balance</div>
+                <div class='grid-value'>{{ totalAmount }} <div class='near-icon'></div></div>
+              </div>
+
+                <div class='grid'>
+                  <div class='grid-title'>Owner's Balance</div>
+                  <div class='grid-value'>{{ ownerAccountBalance }}<div class='near-icon'/></div></div>
                 </div>
-                <div class="row border-top">
-                  <div class="four wide computer seven wide mobile four wide tablet column title">Owner's Balance<div
-                      class="sc-esjQYD gTrsiA trigger"></div>
-                  </div>
-                  <div class="six wide computer four wide mobile six wide tablet column">
-                    <div role="list" class="ui list sc-ifAKCX hmHZHq icon-wrap">{{ ownerAccountBalance }} <div class='near-icon'/></div>
-                  </div>
-                </div>
+
                 {{#lockupState}}
-                  <div class="row border-top">
+                  <div class="grid">
                     <div class="four wide computer seven wide mobile four wide tablet column title">Locked up amount<div
                         class="sc-esjQYD gTrsiA trigger"></div>
                     </div>
@@ -85,7 +81,7 @@
                       <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockedAmount }} Ⓝ</div>
                     </div>
                   </div>
-                  <div class="row border-top">
+                  <div class="grid">
                     <div class="four wide computer seven wide mobile four wide tablet column title">Liquid amount (unlocked + rewards)<div
                         class="sc-esjQYD gTrsiA trigger"></div>
                     </div>
@@ -93,7 +89,7 @@
                       <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ liquidAmount }} Ⓝ</div>
                     </div>
                   </div>
-                  <div class="row border-top">
+                  <div class="grid">
                     <div class="four wide computer seven wide mobile four wide tablet column title">Release start date</div>
                     <div class="six wide computer four wide mobile six wide tablet column">
                       <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupReleaseStartDate }}</div>
@@ -106,14 +102,14 @@
                       {{/lockupState.hasBrokenTimestamp}}
                     </div>
                   </div>
-                  <div class="row border-top">
+                  <div class="grid">
                     <div class="four wide computer seven wide mobile four wide tablet column title">Release duration</div>
                     <div class="six wide computer four wide mobile six wide tablet column">
                       <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.releaseDuration }} days</div>
                     </div>
                   </div>
                   {{#lockupState.vestingInformation}}
-                    <div class="row border-top">
+                    <div class="grid">
                       <div class="four wide computer seven wide mobile four wide tablet column title">Vesting</div>
                       <div class="six wide computer four wide mobile six wide tablet column">
                         <div role="list" class="ui list sc-ifAKCX hmHZHq">{{ lockupState.vestingInformation }}</div>
@@ -125,6 +121,7 @@
               </div>
             </div></div>
         </script>
+
         <div id="output"></div>
         <script id="pool-template" type="x-tmpl-mustache">
           <div class='staking-text'>Staking report</div>
@@ -147,6 +144,7 @@
           {{/result}}
           </table>
         </script>
+        <div id="loader"></div>
         <div id="pools"></div>
       </form>
     </section>
