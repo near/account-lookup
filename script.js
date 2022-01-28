@@ -4,6 +4,7 @@ import * as nearAPI from 'near-api-js';
 import BN from 'bn.js';
 import sha256 from 'js-sha256';
 import pkg from 'bs58';
+import fs from 'fs';
 
 const {encode, decode} = pkg;
 
@@ -164,15 +165,17 @@ async function updateStaking(near, accountId, lookupAccountId) {
     for (let i = 0; i < pools.length; ++i) {
       let directBalance = await masterAccount.viewFunction(pools[i].accountId, "get_account_total_balance", {account_id: accountId});
       let lockupBalance = "0";
-      if (lookupAccountId) {
+      if (!lookupAccountId.endsWith("doesn't exist")) {
         lockupBalance = await masterAccount.viewFunction(pools[i].accountId, "get_account_total_balance", {account_id: lookupAccountId});
       }
       if (directBalance != "0" || lockupBalance != "0") {
-        result.push({
-          accountId: pools[i].accountId,
-          directBalance: nearAPI.utils.format.formatNearAmount(directBalance, 2),
-          lockupBalance: nearAPI.utils.format.formatNearAmount(lockupBalance, 2),
-        });
+
+        console.log(`${accountId},,,,,${pools[i].accountId},${new BN(directBalance).div(fromYocto)},${new BN(lockupBalance).div(fromYocto)}`);
+        // result.push({
+        //   accountId: pools[i].accountId,
+        //   directBalance: nearAPI.utils.format.formatNearAmount(directBalance, 2),
+        //   lockupBalance: nearAPI.utils.format.formatNearAmount(lockupBalance, 2),
+        // });
       }
       // document.getElementById('pools').innerHTML = Mustache.render(template, {
       //     result,
@@ -327,7 +330,7 @@ async function lookup(account) {
     liquid = liquid?.div(fromYocto) || "";
     lockedAmount = lockedAmount?.div(fromYocto) || "";
 
-    console.log(`${inputAccountId},${new BN(ownerAccountBalance).div(fromYocto)},${liquid},${lockupAccountBalance},${lockedAmount}`);
+    console.log(`${inputAccountId},${new BN(ownerAccountBalance).div(fromYocto)},${liquid},${lockupAccountBalance},${lockedAmount},,,`);
   } catch (error) {
     console.error(error);
   }
@@ -344,12 +347,18 @@ async function lookup(account) {
   //     lockupState,
   //  });
 
-  // await updateStaking(near, accountId, lockupAccountId);
+   await updateStaking(near, accountId, lockupAccountId);
 }
 
-let foundation_accounts = [];
 
-console.log(`account_id,owners_liquid_balance,lockup_liquid_balance,lockup_total_balance,lockup_locked_balance`);
-for (const account_id of foundation_accounts) {
-  await lookup(account_id);
+
+try {
+  const data = fs.readFileSync('foundation.txt', 'utf8');
+  let foundation_accounts = data.split("\n");
+  console.log(`account_id,owners_liquid_balance,lockup_liquid_balance,lockup_total_balance,lockup_locked_balance,staking_pool_accountId,staking_pool_direct_balance,staking_pool_lockup_balance`);
+  for (const account_id of foundation_accounts) {
+    await lookup(account_id);
+  }
+} catch (err) {
+  console.error(err);
 }
