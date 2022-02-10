@@ -182,6 +182,8 @@ async function fetchPools(masterAccount) {
 
 async function updateStaking(near, accountId, lookupAccountId) {
   const template = document.getElementById("pool-template").innerHTML;
+
+  document.getElementById("loader").classList.add("active");
   try {
     let masterAccount = await near.account(accountId);
     let pools = await fetchPools(masterAccount);
@@ -213,6 +215,7 @@ async function updateStaking(near, accountId, lookupAccountId) {
           ),
         });
       }
+      document.getElementById("loader").classList.remove("active");
       document.getElementById("pools").innerHTML = Mustache.render(template, {
         result,
         scannedNotDone: i < pools.length - 1,
