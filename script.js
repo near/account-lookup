@@ -131,7 +131,7 @@ async function lookupLockup(near, accountId) {
   } catch (error) {
     console.warn(error);
     return {
-      lockupAccountId,
+      lockupAccountId: `${lockupAccountId} doesn't exist`,
       lockupAmount: 0,
     };
   }
