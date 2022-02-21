@@ -3,8 +3,9 @@ import "regenerator-runtime";
 import * as nearAPI from "near-api-js";
 import BN from "bn.js";
 import sha256 from "js-sha256";
-import { encode, decode } from "bs58";
+import { decode } from "bs58";
 import Mustache from "mustache";
+const DOES_NOT_EXIST = " doesn't exist"
 
 function accountToLockup(masterAccountId, accountId) {
   return `${sha256(Buffer.from(accountId))
@@ -19,7 +20,7 @@ function prepareAccountId(data) {
       .replace("https://wallet.near.org/send-money/", "")
       .toLowerCase();
   }
-  if (data.length == 64 && !data.startsWith("ed25519:")) {
+  if (data.length === 64 && !data.startsWith("ed25519:")) {
     return data;
   }
   let publicKey;
@@ -129,9 +130,9 @@ async function lookupLockup(near, accountId) {
     ].includes((await lockupAccount.state()).code_hash);
     return { lockupAccountId, lockupAccountBalance, lockupState };
   } catch (error) {
-    console.warn(error);
+    console.log(error);
     return {
-      lockupAccountId,
+      lockupAccountId: `${lockupAccountId}${DOES_NOT_EXIST}`,
       lockupAmount: 0,
     };
   }
@@ -195,14 +196,14 @@ async function updateStaking(near, accountId, lookupAccountId) {
         { account_id: accountId }
       );
       let lockupBalance = "0";
-      if (lookupAccountId) {
+      if (lookupAccountId && !lookupAccountId.includes(DOES_NOT_EXIST)) {
         lockupBalance = await masterAccount.viewFunction(
           pools[i].accountId,
           "get_account_total_balance",
           { account_id: lookupAccountId }
         );
       }
-      if (directBalance != "0" || lockupBalance != "0") {
+      if (directBalance !== "0" || lockupBalance !== "0") {
         result.push({
           accountId: pools[i].accountId,
           directBalance: nearAPI.utils.format.formatNearAmount(
