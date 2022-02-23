@@ -5,7 +5,7 @@ import BN from "bn.js";
 import sha256 from "js-sha256";
 import { decode } from "bs58";
 import Mustache from "mustache";
-const DOES_NOT_EXIST = " doesn't exist"
+const DOES_NOT_EXIST = " doesn't exist";
 
 function accountToLockup(masterAccountId, accountId) {
   return `${sha256(Buffer.from(accountId))
@@ -183,8 +183,8 @@ async function fetchPools(masterAccount) {
 
 async function updateStaking(near, accountId, lookupAccountId) {
   const template = document.getElementById("pool-template").innerHTML;
-
   document.getElementById("loader").classList.add("active");
+  document.getElementById("error").style.display = "none";
   try {
     let masterAccount = await near.account(accountId);
     let pools = await fetchPools(masterAccount);
@@ -216,7 +216,7 @@ async function updateStaking(near, accountId, lookupAccountId) {
           ),
         });
       }
-      document.getElementById("loader").classList.remove("active");
+      document.getElementById("loader").className = "";
       document.getElementById("pools").innerHTML = Mustache.render(template, {
         result,
         scannedNotDone: i < pools.length - 1,
@@ -354,36 +354,38 @@ async function lookup() {
         lockupState.vestingInformation
       );
     }
+    document.getElementById("output").innerHTML = Mustache.render(template, {
+      accountId,
+      lockupAccountId,
+      ownerAccountBalance: nearAPI.utils.format.formatNearAmount(
+        ownerAccountBalance,
+        2
+      ),
+      lockedAmount: nearAPI.utils.format.formatNearAmount(
+        lockedAmount.toString(),
+        2
+      ),
+      liquidAmount: nearAPI.utils.format.formatNearAmount(
+        new BN(lockupAccountBalance).sub(new BN(lockedAmount)).toString(),
+        2
+      ),
+      totalAmount: nearAPI.utils.format.formatNearAmount(
+        new BN(ownerAccountBalance)
+          .add(new BN(lockupAccountBalance))
+          .toString(),
+        2
+      ),
+      lockupReleaseStartDate: new Date(
+        lockupReleaseStartTimestamp.divn(1000000).toNumber()
+      ),
+      lockupState,
+    });
+
+    await updateStaking(near, accountId, lockupAccountId);
   } catch (error) {
-    console.error(error);
+    document.getElementById("error").style.display = "block";
+    document.getElementById("loader").classList.remove("active");
   }
-
-  document.getElementById("output").innerHTML = Mustache.render(template, {
-    accountId,
-    lockupAccountId,
-    ownerAccountBalance: nearAPI.utils.format.formatNearAmount(
-      ownerAccountBalance,
-      2
-    ),
-    lockedAmount: nearAPI.utils.format.formatNearAmount(
-      lockedAmount.toString(),
-      2
-    ),
-    liquidAmount: nearAPI.utils.format.formatNearAmount(
-      new BN(lockupAccountBalance).sub(new BN(lockedAmount)).toString(),
-      2
-    ),
-    totalAmount: nearAPI.utils.format.formatNearAmount(
-      new BN(ownerAccountBalance).add(new BN(lockupAccountBalance)).toString(),
-      2
-    ),
-    lockupReleaseStartDate: new Date(
-      lockupReleaseStartTimestamp.divn(1000000).toNumber()
-    ),
-    lockupState,
-  });
-
-  await updateStaking(near, accountId, lockupAccountId);
 }
 
 window.nearAPI = nearAPI;
