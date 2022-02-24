@@ -306,3 +306,10 @@ table td:last-child {
     transform: rotate(360deg);
   }
 }
+
+#error {
+  display: none;
+  margin-top: 40px;
+  text-align: center;
+  color: #db345099;
+}
