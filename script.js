@@ -366,12 +366,12 @@ async function lookup() {
         2
       ),
       liquidAmount: nearAPI.utils.format.formatNearAmount(
-        new BN(lockupAccountBalance).sub(new BN(lockedAmount)).toString(),
+        lockupState.lockupAmount.sub(new BN(lockedAmount)).toString(),
         2
       ),
       totalAmount: nearAPI.utils.format.formatNearAmount(
         new BN(ownerAccountBalance)
-          .add(new BN(lockupAccountBalance))
+          .add(lockupState.lockupAmount)
           .toString(),
         2
       ),
