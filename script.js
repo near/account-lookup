@@ -37,6 +37,11 @@ const readOption = (reader, f, defaultValue) => {
   return x === 1 ? f() : defaultValue;
 };
 
+async function getLatestEpoch(connection){
+  const validatorData = await connection.provider.sendJsonRpc("validators", [null])
+  return await validatorData.epoch_start_height;
+};
+
 async function viewLockupState(connection, contractId) {
   const result = await connection.provider.sendJsonRpc("query", {
     request_type: "view_state",
@@ -331,6 +336,7 @@ async function lookup() {
   let accountId = prepareAccountId(inputAccountId);
 
   let lockupAccountId = "",
+    epochId = 0,
     lockupAccountBalance = 0,
     ownerAccountBalance = 0,
     lockupReleaseStartTimestamp = new BN(0),
@@ -359,6 +365,7 @@ async function lookup() {
       );
     }
     document.getElementById("output").innerHTML = Mustache.render(template, {
+      epochId,
       accountId,
       lockupAccountId,
       ownerAccountBalance: nearAPI.utils.format.formatNearAmount(
@@ -384,8 +391,8 @@ async function lookup() {
       ),
       lockupState,
     });
-
-    await updateStaking(near, accountId, lockupAccountId);
+    //Disabled staking pool fetching
+    //await updateStaking(near, accountId, lockupAccountId);
   } catch (error) {
     document.getElementById("error").style.display = "block";
     document.getElementById("loader").classList.remove("active");
