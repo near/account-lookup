@@ -107,8 +107,12 @@ async function viewLockupState(connection, contractId) {
   };
 }
 
+// Figment DataHub Archival Node
+
+const figmentDhKey = process.env['api_key']
+
 const options = {
-  nodeUrl: "https://rpc.mainnet.near.org",
+  nodeUrl: "https://near-mainnet--rpc--archive.datahub.figment.io/apikey/"+figmentDhKey,
   networkId: "mainnet",
   deps: {},
 };
