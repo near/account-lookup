@@ -127,6 +127,7 @@ const options = {
 async function lookupLockup(near, accountId) {
   const lockupAccountId = accountToLockup("lockup.near", accountId);
   try {
+    // TBD fix the query using non-deprecated endpoint
     const lockupAccount = await near.account(lockupAccountId);
     const lockupAccountBalance = await lockupAccount.viewFunction(
       lockupAccountId,
@@ -338,6 +339,7 @@ async function lookup() {
   let accountId = prepareAccountId(inputAccountId);
 
   let lockupAccountId = "",
+    blockId = document.getElementById("blockHeight").value,
     lockupAccountBalance = 0,
     ownerAccountBalance = 0,
     lockupReleaseStartTimestamp = new BN(0),
@@ -346,8 +348,11 @@ async function lookup() {
   const template = document.getElementById("template").innerHTML;
   document.getElementById("pools").innerHTML = "";
   try {
-    let account = await near.account(accountId);
-    let state = await account.state();
+    let state = await near.connection.provider.query({
+      "request_type": "view_account",
+      "finality": "final",
+      "account_id": accountId
+    });
     ownerAccountBalance = state.amount;
     ({ lockupAccountId, lockupAccountBalance, lockupState } =
       await lookupLockup(near, accountId));
