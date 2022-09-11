@@ -37,9 +37,11 @@ const readOption = (reader, f, defaultValue) => {
   return x === 1 ? f() : defaultValue;
 };
 
-async function getLatestEpoch(connection){
-  const validatorData = await connection.provider.sendJsonRpc("validators", [null])
-  return await validatorData.epoch_start_height;
+async function getCurrentBlock(rpcOptions) {
+  const statusUrl = rpcOptions.nodeUrl+"/status";
+  const req = await fetch(statusUrl);
+  const data = await req.json();
+  return {"latest_block_height": data.sync_info.latest_block_height, "latest_block_time": data.sync_info.latest_block_time};
 };
 
 async function viewLockupState(connection, contractId) {
@@ -336,7 +338,6 @@ async function lookup() {
   let accountId = prepareAccountId(inputAccountId);
 
   let lockupAccountId = "",
-    epochId = 0,
     lockupAccountBalance = 0,
     ownerAccountBalance = 0,
     lockupReleaseStartTimestamp = new BN(0),
@@ -365,7 +366,6 @@ async function lookup() {
       );
     }
     document.getElementById("output").innerHTML = Mustache.render(template, {
-      epochId,
       accountId,
       lockupAccountId,
       ownerAccountBalance: nearAPI.utils.format.formatNearAmount(
@@ -391,8 +391,8 @@ async function lookup() {
       ),
       lockupState,
     });
-    //Disabled staking pool fetching
-    //await updateStaking(near, accountId, lockupAccountId);
+
+    await updateStaking(near, accountId, lockupAccountId);
   } catch (error) {
     document.getElementById("error").style.display = "block";
     document.getElementById("loader").classList.remove("active");
