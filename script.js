@@ -37,11 +37,11 @@ const readOption = (reader, f, defaultValue) => {
   return x === 1 ? f() : defaultValue;
 };
 
-async function getCurrentBlock(rpcOptions) {
+async function getSyncInfo(rpcOptions) {
   const statusUrl = rpcOptions.nodeUrl+"/status";
   const req = await fetch(statusUrl);
   const data = await req.json();
-  return {"latest_block_height": data.sync_info.latest_block_height, "latest_block_time": data.sync_info.latest_block_time};
+  return data.sync_info;
 };
 
 async function viewLockupState(connection, contractId) {
@@ -402,7 +402,8 @@ async function lookup() {
 window.nearAPI = nearAPI;
 window.lookup = lookup;
 (async() => {
-  window.blockInfo = await getCurrentBlock(options);
+  window.syncInfo = await getSyncInfo(options);
+  document.getElementById("blockHeight").value = await syncInfo.latest_block_height;
 })();
 
 window.onload = () => {
