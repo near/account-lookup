@@ -391,8 +391,8 @@ async function lookup() {
       ),
       lockupState,
     });
-
-    await updateStaking(near, accountId, lockupAccountId);
+    // disabled pool fetching to save resources
+    //await updateStaking(near, accountId, lockupAccountId);
   } catch (error) {
     document.getElementById("error").style.display = "block";
     document.getElementById("loader").classList.remove("active");
@@ -401,6 +401,9 @@ async function lookup() {
 
 window.nearAPI = nearAPI;
 window.lookup = lookup;
+(async() => {
+  window.blockInfo = await getCurrentBlock(options);
+})();
 
 window.onload = () => {
   if (window.location.hash) {
