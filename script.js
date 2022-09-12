@@ -127,7 +127,7 @@ const options = {
 async function lookupLockup(near, accountId) {
   const lockupAccountId = accountToLockup("lockup.near", accountId);
   try {
-    // TBD fix the query using non-deprecated endpoint
+    /* TBD fix the query using non-deprecated endpoint
     const lockupAccount = await near.account(lockupAccountId);
     const lockupAccountBalance = await lockupAccount.viewFunction(
       lockupAccountId,
@@ -135,11 +135,32 @@ async function lookupLockup(near, accountId) {
       {}
     );
     const lockupState = await viewLockupState(near.connection, lockupAccountId);
+    */
+    const lockupAccount = await near.connection.provider.sendJsonRpc("query", {
+        request_type: "call_function",
+        account_id: lockupAccountId,
+        method_name: "get_balance",
+        args_base64: "",
+        //finality: "final",
+        block_id: syncInfo.latest_block_hash
+      });
+    const lockupAccountBalance = new Buffer.from(lockupAccount.result).slice(1,-1).toString();
+
+    const lockupCode = await near.connection.provider.sendJsonRpc("query", {
+      request_type: "view_code",
+      account_id: lockupAccountId,
+      //finality: "final",
+      block_id: syncInfo.latest_block_hash
+    });
+    
+    const lockupState = await viewLockupState(near.connection, lockupAccountId);
+    
     // More details: https://github.com/near/core-contracts/pull/136
     lockupState.hasBrokenTimestamp = [
       "3kVY9qcVRoW3B5498SMX6R3rtSLiCdmBzKs7zcnzDJ7Q",
       "DiC9bKCqUHqoYqUXovAnqugiuntHWnM3cAc7KrgaHTu",
-    ].includes((await lockupAccount.state()).code_hash);
+      ].includes(lockupCode.hash);
+    //  ].includes((await lockupAccount.state()).code_hash);
     return { lockupAccountId, lockupAccountBalance, lockupState };
   } catch (error) {
     console.log(error);
@@ -348,15 +369,20 @@ async function lookup() {
   const template = document.getElementById("template").innerHTML;
   document.getElementById("pools").innerHTML = "";
   try {
-    let state = await near.connection.provider.query({
-      "request_type": "view_account",
-      "finality": "final",
-      "account_id": accountId
+    // remove this
+    console.log("trying "+accountId);
+    /*
+    const state = await near.connection.provider.query({
+      request_type: "view_account",
+      finality: "final",
+      account_id: accountId
     });
+    */
+    let account = await near.account(accountId);
+    let state = await account.state();
     ownerAccountBalance = state.amount;
-    ({ lockupAccountId, lockupAccountBalance, lockupState } =
-      await lookupLockup(near, accountId));
-
+    ({ lockupAccountId, lockupAccountBalance, lockupState } = await lookupLockup(near, accountId));
+    
     if (lockupState) {
       lockupReleaseStartTimestamp = getStartLockupTimestamp(lockupState);
       lockedAmount = await getLockedTokenAmount(lockupState);
@@ -396,8 +422,9 @@ async function lookup() {
       ),
       lockupState,
     });
-    // disabled pool fetching to save resources
-    //await updateStaking(near, accountId, lockupAccountId);
+    /* disabled pool fetching to save resources
+    await updateStaking(near, accountId, lockupAccountId);
+    */
   } catch (error) {
     document.getElementById("error").style.display = "block";
     document.getElementById("loader").classList.remove("active");
