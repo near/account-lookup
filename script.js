@@ -19,10 +19,10 @@ function prepareAccountId(data) {
       .replace("@", "")
       .replace("https://wallet.near.org/send-money/", "")
       .toLowerCase();
-  }
+  };
   if (data.length === 64 && !data.startsWith("ed25519:")) {
     return data;
-  }
+  };
   let publicKey;
   if (data.startsWith("NEAR")) {
     publicKey = decode(data.slice(4)).slice(0, -4);
@@ -46,10 +46,11 @@ async function getSyncInfo(rpcOptions) {
 
 async function viewLockupState(connection, contractId) {
   const result = await connection.provider.sendJsonRpc("query", {
-    request_type: "view_state",
-    finality: "final",
-    account_id: contractId,
-    prefix_base64: "U1RBVEU=",
+    "request_type": "view_state",
+    "block_id": blockHeight,
+    "account_id": contractId,
+    "prefix_base64": "U1RBVEU=",
+    //"finality": "final"
   });
   let value = Buffer.from(result.values[0].value, "base64");
   let reader = new nearAPI.utils.serialize.BinaryReader(value);
@@ -137,20 +138,20 @@ async function lookupLockup(near, accountId) {
     const lockupState = await viewLockupState(near.connection, lockupAccountId);
     */
     const lockupAccount = await near.connection.provider.sendJsonRpc("query", {
-        request_type: "call_function",
-        account_id: lockupAccountId,
-        method_name: "get_balance",
-        args_base64: "",
-        //finality: "final",
-        block_id: syncInfo.latest_block_hash
+        "request_type": "call_function",
+        "block_id": blockHeight,
+        "account_id": lockupAccountId,
+        "method_name": "get_balance",
+        "args_base64": ""
+        //"finality": "final"
       });
     const lockupAccountBalance = new Buffer.from(lockupAccount.result).slice(1,-1).toString();
 
     const lockupCode = await near.connection.provider.sendJsonRpc("query", {
-      request_type: "view_code",
-      account_id: lockupAccountId,
-      //finality: "final",
-      block_id: syncInfo.latest_block_hash
+      "request_type": "view_code",
+      "block_id": blockHeight,
+      "account_id": lockupAccountId
+      //"finality": "final"
     });
     
     const lockupState = await viewLockupState(near.connection, lockupAccountId);
@@ -354,13 +355,13 @@ function formatVestingInfo(info) {
 }
 
 async function lookup() {
+  blockHeight = await parseInt(document.getElementById("blockHeight").value);
   const inputAccountId = document.querySelector("#account").value;
   window.location.hash = inputAccountId;
   const near = await nearAPI.connect(options);
   let accountId = prepareAccountId(inputAccountId);
 
   let lockupAccountId = "",
-    blockId = document.getElementById("blockHeight").value,
     lockupAccountBalance = 0,
     ownerAccountBalance = 0,
     lockupReleaseStartTimestamp = new BN(0),
@@ -371,6 +372,7 @@ async function lookup() {
   try {
     // remove this
     console.log("trying "+accountId);
+    console.log("at block height "+blockHeight);
     /*
     const state = await near.connection.provider.query({
       request_type: "view_account",
@@ -429,16 +431,18 @@ async function lookup() {
     document.getElementById("error").style.display = "block";
     document.getElementById("loader").classList.remove("active");
   }
-}
+};
 
 window.nearAPI = nearAPI;
 window.lookup = lookup;
-(async() => {
-  window.syncInfo = await getSyncInfo(options);
-  document.getElementById("blockHeight").value = await syncInfo.latest_block_height;
-})();
 
 window.onload = () => {
+  (async() => {
+    window.syncInfo = await getSyncInfo(options);
+    document.getElementById("blockHeight").value = await syncInfo.latest_block_height;
+    window.blockHeight = await parseInt(document.getElementById("blockHeight").value);
+  })();
+  
   if (window.location.hash) {
     document.querySelector("#account").value = window.location.hash.slice(1);
     lookup();
