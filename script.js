@@ -299,9 +299,13 @@ const saturatingSub = (a, b) => {
 };
 
 // https://github.com/near/core-contracts/blob/master/lockup/src/getters.rs#L64
-async function getLockedTokenAmount(lockupState) {
+async function getLockedTokenAmount(lockupState, blockHeightQuery) {
   const phase2Time = new BN("1602614338293769340");
+
+  /* Previous lock calculation, assumed "now" for the result
   let now = new BN((new Date().getTime() * 1000000).toString());
+  */
+  let now = new BN(blockHeightQuery.toString());
   if (now.lte(phase2Time)) {
     return saturatingSub(
       lockupState.lockupAmount,
@@ -380,13 +384,12 @@ async function lookup() {
   const inputAccountId = document.querySelector("#account").value;
   window.location.hash = inputAccountId;
   const near = await nearAPI.connect(options);
-  const blockInfo = await getBlockInfo(near,blockHeight);
-  // remove this
-  console.log(blockInfo);
-  
+
   let accountId = prepareAccountId(inputAccountId);
 
   let lockupAccountId = "",
+    epochHeight = "",
+    blockDate = "",
     lockupAccountBalance = 0,
     ownerAccountBalance = 0,
     lockupReleaseStartTimestamp = new BN(0),
@@ -398,6 +401,11 @@ async function lookup() {
     // remove this
     console.log("trying "+accountId);
     console.log("at block height "+blockHeight);
+
+    // retrieving the block and epoch information
+    const blockInfo = await getBlockInfo(near,blockHeight);
+    epochHeight = blockInfo.epoch_height.toString();
+    blockDate = blockInfo.block_timestamp.toDateString();
     
     /* old query
     
@@ -405,6 +413,7 @@ async function lookup() {
     let state = await account.state();
     
     */
+    
     let state = await near.connection.provider.sendJsonRpc("query", {
       "request_type": "view_account",
       "block_id": blockHeight,
@@ -416,7 +425,7 @@ async function lookup() {
     
     if (lockupState) {
       lockupReleaseStartTimestamp = getStartLockupTimestamp(lockupState);
-      lockedAmount = await getLockedTokenAmount(lockupState);
+      lockedAmount = await getLockedTokenAmount(lockupState, blockInfo.block_nanosec);
       lockupState.releaseDuration = lockupState.releaseDuration
         .div(new BN("1000000000"))
         .divn(60)
@@ -428,6 +437,8 @@ async function lookup() {
       );
     }
     document.getElementById("output").innerHTML = Mustache.render(template, {
+      epochHeight,
+      blockDate,
       accountId,
       lockupAccountId,
       ownerAccountBalance: nearAPI.utils.format.formatNearAmount(
