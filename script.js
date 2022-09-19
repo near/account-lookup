@@ -37,11 +37,31 @@ const readOption = (reader, f, defaultValue) => {
   return x === 1 ? f() : defaultValue;
 };
 
-async function getSyncInfo(rpcOptions) {
-  const statusUrl = rpcOptions.nodeUrl+"/status";
+async function getChainTip() {
+  const statusUrl = "https://rpc.mainnet.near.org/status";
   const req = await fetch(statusUrl);
   const data = await req.json();
   return data.sync_info;
+};
+
+async function getBlockInfo(rpcProvider, height) {
+  const res = {};
+  // get the block data
+  const blockData = await rpcProvider.connection.provider.sendJsonRpc("block",{ "block_id": height
+  });
+  res["block_height"] = await blockData.header.height;
+  res["block_hash"] = await blockData.header.hash;
+  res["block_timestamp"] = new Date(await blockData.header.timestamp/1000000);
+  res["block_nanosec"] = await blockData.header.timestamp;
+  // get the epoch data, aka the last block when rewards were distributed
+  const epochBlockInfo = await rpcProvider.connection.provider.sendJsonRpc("block", {
+    "block_id": blockData.header.next_epoch_id
+  });
+  res["epoch_height"] = await epochBlockInfo.header.height;
+  res["epoch_hash"] = await epochBlockInfo.header.hash;
+  res["epoch_timestamp"] = new Date(await epochBlockInfo.header.timestamp/1000000);
+  res["epoch_nanosec"] = await epochBlockInfo.header.timestamp
+  return res;
 };
 
 async function viewLockupState(connection, contractId) {
@@ -49,8 +69,8 @@ async function viewLockupState(connection, contractId) {
     "request_type": "view_state",
     "block_id": blockHeight,
     "account_id": contractId,
-    "prefix_base64": "U1RBVEU=",
-    //"finality": "final"
+    "prefix_base64": "U1RBVEU="
+    //, "finality": "final"
   });
   let value = Buffer.from(result.values[0].value, "base64");
   let reader = new nearAPI.utils.serialize.BinaryReader(value);
@@ -143,7 +163,7 @@ async function lookupLockup(near, accountId) {
         "account_id": lockupAccountId,
         "method_name": "get_balance",
         "args_base64": ""
-        //"finality": "final"
+        //, "finality": "final"
       });
     const lockupAccountBalance = new Buffer.from(lockupAccount.result).slice(1,-1).toString();
 
@@ -151,7 +171,7 @@ async function lookupLockup(near, accountId) {
       "request_type": "view_code",
       "block_id": blockHeight,
       "account_id": lockupAccountId
-      //"finality": "final"
+      //, "finality": "final"
     });
     
     const lockupState = await viewLockupState(near.connection, lockupAccountId);
@@ -215,6 +235,7 @@ async function fetchPools(masterAccount) {
   return poolsWithFee;
 }
 
+// not updated with the new query method
 async function updateStaking(near, accountId, lookupAccountId) {
   const template = document.getElementById("pool-template").innerHTML;
   document.getElementById("loader").classList.add("active");
@@ -359,6 +380,10 @@ async function lookup() {
   const inputAccountId = document.querySelector("#account").value;
   window.location.hash = inputAccountId;
   const near = await nearAPI.connect(options);
+  const blockInfo = await getBlockInfo(near,blockHeight);
+  // remove this
+  console.log(blockInfo);
+  
   let accountId = prepareAccountId(inputAccountId);
 
   let lockupAccountId = "",
@@ -373,15 +398,19 @@ async function lookup() {
     // remove this
     console.log("trying "+accountId);
     console.log("at block height "+blockHeight);
-    /*
-    const state = await near.connection.provider.query({
-      request_type: "view_account",
-      finality: "final",
-      account_id: accountId
-    });
-    */
+    
+    /* old query
+    
     let account = await near.account(accountId);
     let state = await account.state();
+    
+    */
+    let state = await near.connection.provider.sendJsonRpc("query", {
+      "request_type": "view_account",
+      "block_id": blockHeight,
+      "account_id": accountId
+      //, "finality": "final"
+    });
     ownerAccountBalance = state.amount;
     ({ lockupAccountId, lockupAccountBalance, lockupState } = await lookupLockup(near, accountId));
     
@@ -424,8 +453,10 @@ async function lookup() {
       ),
       lockupState,
     });
-    /* disabled pool fetching to save resources
+    /* disabled pool fetching to save resources, irrelevant for the sake of the tool
+    
     await updateStaking(near, accountId, lockupAccountId);
+    
     */
   } catch (error) {
     document.getElementById("error").style.display = "block";
@@ -438,7 +469,7 @@ window.lookup = lookup;
 
 window.onload = () => {
   (async() => {
-    window.syncInfo = await getSyncInfo(options);
+    window.syncInfo = await getChainTip();
     document.getElementById("blockHeight").value = await syncInfo.latest_block_height;
     window.blockHeight = await parseInt(document.getElementById("blockHeight").value);
   })();
