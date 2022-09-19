@@ -37,6 +37,7 @@ const readOption = (reader, f, defaultValue) => {
   return x === 1 ? f() : defaultValue;
 };
 
+// query the NEAR Rpc to get the latest block height
 async function getChainTip() {
   const statusUrl = "https://rpc.mainnet.near.org/status";
   const req = await fetch(statusUrl);
@@ -44,6 +45,7 @@ async function getChainTip() {
   return data.sync_info;
 };
 
+// get the block timestamp, to calculate the correct vesting information, and the epoch height
 async function getBlockInfo(rpcProvider, height) {
   const res = {};
   // get the block data
@@ -135,11 +137,12 @@ async function viewLockupState(connection, contractId) {
   };
 }
 
-// Figment DataHub Archival Node
-
+// Api key to query the Figment DataHub archival node 
 const figmentDhKey = process.env['api_key']
 
+// Connect to the archival RPC endpoint
 const options = {
+  // nodeUrl: "https://rpc.mainnet.near.org",
   nodeUrl: "https://near-mainnet--rpc--archive.datahub.figment.io/apikey/"+figmentDhKey,
   networkId: "mainnet",
   deps: {},
@@ -148,7 +151,7 @@ const options = {
 async function lookupLockup(near, accountId) {
   const lockupAccountId = accountToLockup("lockup.near", accountId);
   try {
-    /* TBD fix the query using non-deprecated endpoint
+    /* Old query method:
     const lockupAccount = await near.account(lockupAccountId);
     const lockupAccountBalance = await lockupAccount.viewFunction(
       lockupAccountId,
@@ -165,6 +168,7 @@ async function lookupLockup(near, accountId) {
         "args_base64": ""
         //, "finality": "final"
       });
+    
     const lockupAccountBalance = new Buffer.from(lockupAccount.result).slice(1,-1).toString();
 
     const lockupCode = await near.connection.provider.sendJsonRpc("query", {
@@ -181,7 +185,10 @@ async function lookupLockup(near, accountId) {
       "3kVY9qcVRoW3B5498SMX6R3rtSLiCdmBzKs7zcnzDJ7Q",
       "DiC9bKCqUHqoYqUXovAnqugiuntHWnM3cAc7KrgaHTu",
       ].includes(lockupCode.hash);
-    //  ].includes((await lockupAccount.state()).code_hash);
+    
+    /* to be used if the old query method is reinstated:
+      ].includes((await lockupAccount.state()).code_hash);
+    */
     return { lockupAccountId, lockupAccountBalance, lockupState };
   } catch (error) {
     console.log(error);
@@ -235,7 +242,7 @@ async function fetchPools(masterAccount) {
   return poolsWithFee;
 }
 
-// not updated with the new query method
+// Obsolete function: not yet updated with the blockId query method, so the result will always return the latest block state - as it is default with nearApiJs
 async function updateStaking(near, accountId, lookupAccountId) {
   const template = document.getElementById("pool-template").innerHTML;
   document.getElementById("loader").classList.add("active");
@@ -302,8 +309,10 @@ const saturatingSub = (a, b) => {
 async function getLockedTokenAmount(lockupState, blockHeightQuery) {
   const phase2Time = new BN("1602614338293769340");
 
-  /* Previous lock calculation, assumed "now" for the result
+  /* Previous lock calculation, which assumed "now" for the result:
+  
   let now = new BN((new Date().getTime() * 1000000).toString());
+  
   */
   let now = new BN(blockHeightQuery.toString());
   if (now.lte(phase2Time)) {
@@ -380,7 +389,13 @@ function formatVestingInfo(info) {
 }
 
 async function lookup() {
-  blockHeight = await parseInt(document.getElementById("blockHeight").value);
+  blockHeight =  parseInt(document.getElementById("blockHeight").value);
+  if (!(blockHeight)) {
+    syncInfo = await getChainTip();
+    // relaxed the blockHeight query to 10 blocks back from the tip, we are looking at an archive after all =)
+    blockHeight = (await syncInfo.latest_block_height) -10;
+    document.getElementById("blockHeight").value = blockHeight;
+  };
   const inputAccountId = document.querySelector("#account").value;
   window.location.hash = inputAccountId;
   const near = await nearAPI.connect(options);
@@ -398,16 +413,20 @@ async function lookup() {
   const template = document.getElementById("template").innerHTML;
   document.getElementById("pools").innerHTML = "";
   try {
-    // remove this
+    // logs, just because
     console.log("trying "+accountId);
     console.log("at block height "+blockHeight);
 
-    // retrieving the block and epoch information
-    const blockInfo = await getBlockInfo(near,blockHeight);
-    epochHeight = blockInfo.epoch_height.toString();
-    blockDate = blockInfo.block_timestamp.toDateString();
+    // cleaning up the output from previous queries and enabling the loader
+    document.getElementById("output").innerHTML = '';
+    document.getElementById("loader").classList.add("active");
     
-    /* old query
+    // retrieving the block and epoch information
+    const blockInfo = await getBlockInfo(near, blockHeight);
+    epochHeight = blockInfo.epoch_height.toString();
+    blockDate = blockInfo.block_timestamp.toString();
+    
+    /* old query:
     
     let account = await near.account(accountId);
     let state = await account.state();
@@ -436,6 +455,8 @@ async function lookup() {
         lockupState.vestingInformation
       );
     }
+
+    document.getElementById("loader").classList.remove("active");
     document.getElementById("output").innerHTML = Mustache.render(template, {
       epochHeight,
       blockDate,
@@ -464,7 +485,7 @@ async function lookup() {
       ),
       lockupState,
     });
-    /* disabled pool fetching to save resources, irrelevant for the sake of the tool
+    /* disabled pool fetching to save resources, this is irrelevant for the sake of this tool:
     
     await updateStaking(near, accountId, lockupAccountId);
     
@@ -481,8 +502,6 @@ window.lookup = lookup;
 window.onload = () => {
   (async() => {
     window.syncInfo = await getChainTip();
-    document.getElementById("blockHeight").value = await syncInfo.latest_block_height;
-    window.blockHeight = await parseInt(document.getElementById("blockHeight").value);
   })();
   
   if (window.location.hash) {
