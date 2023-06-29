@@ -1,10 +1,8 @@
-import "regenerator-runtime";
-
-import * as nearAPI from "near-api-js";
-import BN from "bn.js";
-import sha256 from "js-sha256";
-import { decode } from "bs58";
-import Mustache from "mustache";
+const nearAPI = require('near-api-js');
+const BN = require('bn.js');
+const sha256 = require('js-sha256');
+const { decode } = require('bs58');
+const Mustache = require('mustache');
 const DOES_NOT_EXIST = " doesn't exist";
 
 function accountToLockup(masterAccountId, accountId) {
