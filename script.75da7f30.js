@@ -881,7 +881,7 @@ exports.KeyStore = KeyStore;
 
 },{}],"node_modules/parcel-bundler/src/builtins/_empty.js":[function(require,module,exports) {
 
-},{}],"node_modules/tweetnacl/nacl-fast.js":[function(require,module,exports) {
+},{}],"node_modules/near-api-js/node_modules/tweetnacl/nacl-fast.js":[function(require,module,exports) {
 (function(nacl) {
 'use strict';
 
@@ -10203,7 +10203,7 @@ class KeyPairEd25519 extends KeyPair {
 }
 exports.KeyPairEd25519 = KeyPairEd25519;
 
-},{"tweetnacl":"node_modules/tweetnacl/nacl-fast.js","./serialize":"node_modules/near-api-js/lib/utils/serialize.js","./enums":"node_modules/near-api-js/lib/utils/enums.js"}],"node_modules/near-api-js/lib/key_stores/in_memory_key_store.js":[function(require,module,exports) {
+},{"tweetnacl":"node_modules/near-api-js/node_modules/tweetnacl/nacl-fast.js","./serialize":"node_modules/near-api-js/lib/utils/serialize.js","./enums":"node_modules/near-api-js/lib/utils/enums.js"}],"node_modules/near-api-js/lib/key_stores/in_memory_key_store.js":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InMemoryKeyStore = void 0;
@@ -10537,7 +10537,7 @@ function adaptTransactionResult(txResult) {
 }
 exports.adaptTransactionResult = adaptTransactionResult;
 
-},{"buffer":"node_modules/buffer/index.js"}],"node_modules/depd/lib/browser/index.js":[function(require,module,exports) {
+},{"buffer":"node_modules/buffer/index.js"}],"node_modules/near-api-js/node_modules/depd/lib/browser/index.js":[function(require,module,exports) {
 /*!
  * depd
  * Copyright(c) 2015 Douglas Christopher Wilson
@@ -10609,7 +10609,7 @@ function wrapproperty(obj, prop, message) {
     throw new TypeError('property must be configurable');
   }
 }
-},{}],"node_modules/http-errors/node_modules/depd/lib/browser/index.js":[function(require,module,exports) {
+},{}],"node_modules/depd/lib/browser/index.js":[function(require,module,exports) {
 /*!
  * depd
  * Copyright(c) 2015 Douglas Christopher Wilson
@@ -11179,7 +11179,7 @@ function populateConstructorExports(exports, codes, HttpError) {
 
   exports["I'mateapot"] = deprecate.function(exports.ImATeapot, '"I\'mateapot"; use "ImATeapot" instead');
 }
-},{"depd":"node_modules/http-errors/node_modules/depd/lib/browser/index.js","setprototypeof":"node_modules/setprototypeof/index.js","statuses":"node_modules/statuses/index.js","inherits":"node_modules/inherits/inherits_browser.js","toidentifier":"node_modules/toidentifier/index.js"}],"node_modules/near-api-js/lib/utils/exponential-backoff.js":[function(require,module,exports) {
+},{"depd":"node_modules/depd/lib/browser/index.js","setprototypeof":"node_modules/setprototypeof/index.js","statuses":"node_modules/statuses/index.js","inherits":"node_modules/inherits/inherits_browser.js","toidentifier":"node_modules/toidentifier/index.js"}],"node_modules/near-api-js/lib/utils/exponential-backoff.js":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 async function exponentialBackoff(startWaitTime, retryNumber, waitBackoff, getResult) {
@@ -15557,7 +15557,7 @@ module.exports = {
   "511": "Network Authentication Required"
 }
 
-},{}],"node_modules/punycode/punycode.js":[function(require,module,exports) {
+},{}],"node_modules/node-libs-browser/node_modules/punycode/punycode.js":[function(require,module,exports) {
 var global = arguments[3];
 var define;
 /*! https://mths.be/punycode v1.3.2 by @mathias */
@@ -17023,7 +17023,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"punycode":"node_modules/punycode/punycode.js","./util":"node_modules/url/util.js","querystring":"node_modules/querystring-es3/index.js"}],"node_modules/stream-http/index.js":[function(require,module,exports) {
+},{"punycode":"node_modules/node-libs-browser/node_modules/punycode/punycode.js","./util":"node_modules/url/util.js","querystring":"node_modules/querystring-es3/index.js"}],"node_modules/stream-http/index.js":[function(require,module,exports) {
 var global = arguments[3];
 var ClientRequest = require('./lib/request')
 var response = require('./lib/response')
@@ -19272,7 +19272,7 @@ class JsonRpcProvider extends provider_1.Provider {
 }
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"depd":"node_modules/depd/lib/browser/index.js","./provider":"node_modules/near-api-js/lib/providers/provider.js","../utils/web":"node_modules/near-api-js/lib/utils/web.js","../utils/errors":"node_modules/near-api-js/lib/utils/errors.js","../utils/serialize":"node_modules/near-api-js/lib/utils/serialize.js","../utils/rpc_errors":"node_modules/near-api-js/lib/utils/rpc_errors.js","buffer":"node_modules/buffer/index.js"}],"node_modules/near-api-js/lib/providers/index.js":[function(require,module,exports) {
+},{"depd":"node_modules/near-api-js/node_modules/depd/lib/browser/index.js","./provider":"node_modules/near-api-js/lib/providers/provider.js","../utils/web":"node_modules/near-api-js/lib/utils/web.js","../utils/errors":"node_modules/near-api-js/lib/utils/errors.js","../utils/serialize":"node_modules/near-api-js/lib/utils/serialize.js","../utils/rpc_errors":"node_modules/near-api-js/lib/utils/rpc_errors.js","buffer":"node_modules/buffer/index.js"}],"node_modules/near-api-js/lib/providers/index.js":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ErrorContext = exports.TypedError = exports.getTransactionLastResult = exports.FinalExecutionStatusBasic = exports.JsonRpcProvider = exports.Provider = void 0;
@@ -22628,7 +22628,7 @@ function _viewLockupState() {
 }
 
 var options = {
-  nodeUrl: "https://rpc.mainnet.near.org",
+  nodeUrl: "https://near.lava.build",
   networkId: "mainnet",
   deps: {}
 };
@@ -22779,49 +22779,50 @@ function _updateStaking() {
           case 0:
             template = document.getElementById("pool-template").innerHTML;
             document.getElementById("loader").classList.add("active");
-            _context5.prev = 2;
-            _context5.next = 5;
+            document.getElementById("error").style.display = "none";
+            _context5.prev = 3;
+            _context5.next = 6;
             return near.account(accountId);
 
-          case 5:
+          case 6:
             masterAccount = _context5.sent;
-            _context5.next = 8;
+            _context5.next = 9;
             return fetchPools(masterAccount);
 
-          case 8:
+          case 9:
             pools = _context5.sent;
             result = [];
             i = 0;
 
-          case 11:
+          case 12:
             if (!(i < pools.length)) {
-              _context5.next = 26;
+              _context5.next = 27;
               break;
             }
 
-            _context5.next = 14;
+            _context5.next = 15;
             return masterAccount.viewFunction(pools[i].accountId, "get_account_total_balance", {
               account_id: accountId
             });
 
-          case 14:
+          case 15:
             directBalance = _context5.sent;
             lockupBalance = "0";
 
             if (!(lookupAccountId && !lookupAccountId.includes(DOES_NOT_EXIST))) {
-              _context5.next = 20;
+              _context5.next = 21;
               break;
             }
 
-            _context5.next = 19;
+            _context5.next = 20;
             return masterAccount.viewFunction(pools[i].accountId, "get_account_total_balance", {
               account_id: lookupAccountId
             });
 
-          case 19:
+          case 20:
             lockupBalance = _context5.sent;
 
-          case 20:
+          case 21:
             if (directBalance !== "0" || lockupBalance !== "0") {
               result.push({
                 accountId: pools[i].accountId,
@@ -22830,7 +22831,7 @@ function _updateStaking() {
               });
             }
 
-            document.getElementById("loader").classList.remove("active");
+            document.getElementById("loader").className = "";
             document.getElementById("pools").innerHTML = _mustache.default.render(template, {
               result: result,
               scannedNotDone: i < pools.length - 1,
@@ -22838,26 +22839,26 @@ function _updateStaking() {
               totalPools: pools.length
             });
 
-          case 23:
+          case 24:
             ++i;
-            _context5.next = 11;
+            _context5.next = 12;
             break;
 
-          case 26:
-            _context5.next = 31;
+          case 27:
+            _context5.next = 32;
             break;
 
-          case 28:
-            _context5.prev = 28;
-            _context5.t0 = _context5["catch"](2);
+          case 29:
+            _context5.prev = 29;
+            _context5.t0 = _context5["catch"](3);
             console.log(_context5.t0);
 
-          case 31:
+          case 32:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 28]]);
+    }, _callee5, null, [[3, 29]]);
   }));
   return _updateStaking.apply(this, arguments);
 }
@@ -23025,15 +23026,6 @@ function _lookup() {
             lockupState.vestingInformation = formatVestingInfo(lockupState.vestingInformation);
 
           case 30:
-            _context7.next = 35;
-            break;
-
-          case 32:
-            _context7.prev = 32;
-            _context7.t0 = _context7["catch"](9);
-            console.error(_context7.t0);
-
-          case 35:
             document.getElementById("output").innerHTML = _mustache.default.render(template, {
               accountId: accountId,
               lockupAccountId: lockupAccountId,
@@ -23044,15 +23036,25 @@ function _lookup() {
               lockupReleaseStartDate: new Date(lockupReleaseStartTimestamp.divn(1000000).toNumber()),
               lockupState: lockupState
             });
-            _context7.next = 38;
+            _context7.next = 33;
             return updateStaking(near, accountId, lockupAccountId);
 
-          case 38:
+          case 33:
+            _context7.next = 39;
+            break;
+
+          case 35:
+            _context7.prev = 35;
+            _context7.t0 = _context7["catch"](9);
+            document.getElementById("error").style.display = "block";
+            document.getElementById("loader").classList.remove("active");
+
+          case 39:
           case "end":
             return _context7.stop();
         }
       }
-    }, _callee7, null, [[9, 32]]);
+    }, _callee7, null, [[9, 35]]);
   }));
   return _lookup.apply(this, arguments);
 }
@@ -23094,7 +23096,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54555" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50635" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

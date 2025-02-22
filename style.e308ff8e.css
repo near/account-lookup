@@ -307,5 +307,12 @@ table td:last-child {
   }
 }
 
+#error {
+  display: none;
+  margin-top: 40px;
+  text-align: center;
+  color: #db345099;
+}
+
 
 /*# sourceMappingURL=/style.e308ff8e.css.map */
