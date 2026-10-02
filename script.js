@@ -108,7 +108,7 @@ async function viewLockupState(connection, contractId) {
 }
 
 const options = {
-  nodeUrl: "https://near.lava.build",
+  nodeUrl: "https://rpc.mainnet.fastnear.com/",
   networkId: "mainnet",
   deps: {},
 };
